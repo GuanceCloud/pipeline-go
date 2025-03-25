@@ -34,12 +34,15 @@ func (record *IPdbRecord) CheckData() *IPdbRecord {
 	case "TW":
 		record.Country = "CN"
 		record.Region = "Taiwan"
+		record.Timezone = "Asia/Shanghai"
 	case "MO":
 		record.Country = "CN"
 		record.Region = "Macao"
+		record.Timezone = "Asia/Shanghai"
 	case "HK":
 		record.Country = "CN"
 		record.Region = "Hong Kong"
+		record.Timezone = "Asia/Shanghai"
 	}
 	return record
 }
