@@ -5,11 +5,12 @@ go 1.19
 require (
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.47.1
 	github.com/GuanceCloud/cliutils v1.1.22-0.20250423115841-118da498760e
-	github.com/GuanceCloud/grok v1.1.4
-	github.com/GuanceCloud/platypus v0.3.1
+	github.com/GuanceCloud/grok v1.1.5-0.20250416104424-34917bd63e69
+	github.com/GuanceCloud/platypus v0.3.3-0.20250417080731-9a4acd7545e7
 	github.com/antchfx/xmlquery v1.3.18
 	github.com/araddon/dateparse v0.0.0-20201001162425-8aadafed4dc4
 	github.com/avast/retry-go v3.0.0+incompatible
+	github.com/dgraph-io/ristretto v0.2.0
 	github.com/goccy/go-json v0.10.3
 	github.com/hashicorp/go-retryablehttp v0.7.4
 	github.com/influxdata/influxdb1-client v0.0.0-20220302092344-a9ab5670611c
@@ -21,6 +22,7 @@ require (
 	github.com/prometheus/client_golang v1.16.0
 	github.com/prometheus/client_model v0.4.0
 	github.com/spf13/cast v1.5.1
+	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.17.0
 	github.com/vjeantet/grok v1.0.1
@@ -54,6 +56,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
+	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
@@ -74,6 +77,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/xid v1.2.1 // indirect
 	github.com/satori/go.uuid v1.2.0 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

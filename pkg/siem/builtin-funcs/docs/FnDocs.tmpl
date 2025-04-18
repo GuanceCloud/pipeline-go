@@ -1,0 +1,39 @@
+# SIEM Built-In Function
+{{range .}}
+## `{{.Name}}` {#fn-{{.Name}}}
+
+Function prototype: `{{signature .FnDesc}}`
+
+Function description: {{.FnDesc.Desc}}{{if gt (len .FnDesc.Params) 0}}
+
+Function parameters:
+{{range .FnDesc.Params}}
+- `{{.Name}}`: {{.Desc}}{{end}}
+{{end}}{{if gt (len .FnDesc.Returns) 0}}
+Function returns:
+{{range .FnDesc.Returns}}
+- `{{typestr .}}`: {{.Desc}}{{end}}
+{{end}}{{if .FnExp}}
+Function examples:
+{{range $index, $element := .FnExp.Progs}}
+* CASE {{$index}}:
+
+Script content:
+{{if (endsWithNewline $element.Script)}}
+```py
+{{.Script}}```
+{{else}}
+```py
+{{.Script}}
+```{{end}}
+Standard output:
+{{if (endsWithNewline $element.Stdout)}}
+```txt
+{{$element.Stdout}}```{{else}}
+```txt
+{{$element.Stdout}}
+```{{end}}{{if gt (len $element.TriggerResult) 0}}
+Trigger output:
+```json
+{{trigger_output $element.TriggerResult}}
+```{{end}}{{end}}{{end}}{{end}}
