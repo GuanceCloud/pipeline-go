@@ -72,13 +72,12 @@ type DQLCliKodo struct {
 	WSUUID string
 }
 
-func NewDQLKodo(endpoint, path, token, uuid string) *DQLCliKodo {
+func NewDQLKodo(endpoint, path, uuid string) *DQLCliKodo {
 	u, _ := url.JoinPath(endpoint, path)
 	return &DQLCliKodo{
 		Endpoint: endpoint,
 		Path:     path,
 		URL:      u,
-		WSToken:  token,
 		WSUUID:   uuid,
 	}
 }
@@ -115,7 +114,7 @@ func (cli *DQLCliKodo) Query(q, qTyp string, limit, offset, slimit int64, timeRa
 
 	b, err := json.Marshal(map[string]any{
 		"workspace_uuid": cli.WSUUID,
-		"token":          cli.WSToken,
+		// "token":          cli.WSToken,
 		"queries": []map[string]any{
 			query,
 		},
