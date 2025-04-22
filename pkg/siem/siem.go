@@ -24,9 +24,9 @@ func WithFuncs(fn map[string]*runtimev2.Fn) Opt {
 	}
 }
 
-func WithDQLKodo(endpoint, path, wsUUID string) Opt {
+func WithDQLKodo(url, wsUUID string) Opt {
 	return func(c *Config) {
-		dql := dql.NewDQLKodo(endpoint, path, wsUUID)
+		dql := dql.NewDQLKodo(url, wsUUID)
 		c.Private[funcs.PDQLCli] = dql
 	}
 }

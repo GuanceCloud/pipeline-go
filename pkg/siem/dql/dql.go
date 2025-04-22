@@ -63,22 +63,17 @@ type DQLCliOpenAPI struct {
 }
 
 type DQLCliKodo struct {
-	Endpoint string
-	Path     string
-	URL      string
+	URL string
 
 	WSToken string
 
 	WSUUID string
 }
 
-func NewDQLKodo(endpoint, path, uuid string) *DQLCliKodo {
-	u, _ := url.JoinPath(endpoint, path)
+func NewDQLKodo(url, uuid string) *DQLCliKodo {
 	return &DQLCliKodo{
-		Endpoint: endpoint,
-		Path:     path,
-		URL:      u,
-		WSUUID:   uuid,
+		URL:    url,
+		WSUUID: uuid,
 	}
 }
 

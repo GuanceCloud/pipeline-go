@@ -1,12 +1,14 @@
 package trigger
 
-import "sync"
+import (
+	"sync"
+)
 
 type Data struct {
-	Result    any            `json:"result"`
-	Level     string         `json:"level"`
-	DimTags   map[string]any `json:"dim_data"`
-	ExtraData map[string]any `json:"extra_data"`
+	Result    any               `json:"result"`
+	Level     string            `json:"level"`
+	DimTags   map[string]string `json:"dim_data"`
+	ExtraData map[string]any    `json:"extra_data"`
 }
 
 type Trigger struct {
@@ -22,10 +24,18 @@ func (tr *Trigger) Trigger(result any, level string, dimTags, extraData map[stri
 	tr.rwMutex.Lock()
 	defer tr.rwMutex.Unlock()
 
+	tags := map[string]string{}
+
+	for k, v := range dimTags {
+		if v, ok := v.(string); ok {
+			tags[k] = v
+		}
+	}
+
 	tr.vals = append(tr.vals, Data{
 		Result:    result,
 		Level:     level,
-		DimTags:   dimTags,
+		DimTags:   tags,
 		ExtraData: extraData,
 	})
 }
