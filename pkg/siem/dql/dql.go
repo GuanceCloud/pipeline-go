@@ -109,6 +109,7 @@ func (cli *DQLCliKodo) Query(q, qTyp string, limit, offset, slimit int64, timeRa
 
 	b, err := json.Marshal(map[string]any{
 		"workspace_uuid": cli.WSUUID,
+		"query_source":   "arbiter",
 		// "token":          cli.WSToken,
 		"queries": []map[string]any{
 			query,
