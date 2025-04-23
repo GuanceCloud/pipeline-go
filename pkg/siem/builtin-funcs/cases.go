@@ -96,8 +96,8 @@ printf("result group 1: %v; %v\n", v["k2"], v["k3"])
 
 v1 = {"a":1}
 v2 = {"b":1}
-delete(key="a", src=v1)
-delete(src=v2, key="b")
+delete(key="a", m=v1)
+delete(m=v2, key="b")
 printf("result group 2: %v; %v\n", v1, v2)
 `,
 			Stdout: "result group 1: {\"b\":2}; [{\"c\":1.1}]\nresult group 2: {}; {}\n",

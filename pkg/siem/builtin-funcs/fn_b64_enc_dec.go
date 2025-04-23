@@ -53,8 +53,7 @@ var FnB64EncDesc = runtimev2.FnDesc{
 }
 
 func FnB64DecCheck(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
-	runtimev2.CheckPassParam(ctx, expr, FnB64DecDesc.Params)
-	return nil
+	return runtimev2.CheckPassParam(ctx, expr, FnB64DecDesc.Params)
 }
 
 func FnB64Dec(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
@@ -75,8 +74,8 @@ func FnB64Dec(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 }
 
 func FnB64EncCheck(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
-	runtimev2.CheckPassParam(ctx, expr, FnB64EncDesc.Params)
-	return nil
+	return runtimev2.CheckPassParam(ctx, expr, FnB64EncDesc.Params)
+
 }
 
 func FnB64Enc(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {

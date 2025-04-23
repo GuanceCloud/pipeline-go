@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/GuanceCloud/pipeline-go/pkg/siem/trigger"
@@ -14,9 +13,9 @@ import (
 )
 
 func TestDocs(t *testing.T) {
-	d, err := GenerateDocs()
+	_, err := GenerateDocs()
 	assert.NoError(t, err)
-	os.WriteFile("docs/docs.md", []byte(d), 0644)
+	// _ = os.WriteFile("docs/docs.md", []byte(d), 0644)
 }
 
 func TestCases(t *testing.T) {
