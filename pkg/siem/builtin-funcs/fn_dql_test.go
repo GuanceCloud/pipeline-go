@@ -30,7 +30,7 @@ func TestFnDQL(t *testing.T) {
 				PDQLCli: dql.NewDQLOpenAPI(
 					server.URL,
 					dql.OpenAPIPath,
-					"abc",
+					"abc", nil,
 				),
 			})
 		})
@@ -67,7 +67,7 @@ func TestFuncDQLLog(t *testing.T) {
 				PDQLCli: dql.NewDQLOpenAPI(
 					server.URL,
 					dql.OpenAPIPath,
-					"abc",
+					"abc", nil,
 				)},
 		},
 		{
@@ -77,7 +77,7 @@ func TestFuncDQLLog(t *testing.T) {
 				PDQLCli: dql.NewDQLOpenAPI(
 					svcKodo.URL,
 					dql.KodoPath,
-					"abc",
+					"abc", nil,
 				)},
 		},
 	}

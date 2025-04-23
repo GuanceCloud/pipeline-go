@@ -24,17 +24,17 @@ func WithFuncs(fn map[string]*runtimev2.Fn) Opt {
 	}
 }
 
-func WithDQLKodo(url, wsUUID string) Opt {
+func WithDQLKodo(url, wsUUID string, timeRange []int64) Opt {
 	return func(c *Config) {
-		dql := dql.NewDQLKodo(url, wsUUID)
+		dql := dql.NewDQLKodo(url, wsUUID, timeRange)
 		c.Private[funcs.PDQLCli] = dql
 	}
 }
 
-func WithDQLOpenAPI(endpoint string, apikey string) Opt {
+func WithDQLOpenAPI(endpoint string, apikey string, timeRange []int64) Opt {
 	return func(c *Config) {
 		dqlCli := dql.NewDQLOpenAPI(
-			endpoint, dql.OpenAPIPath, apikey)
+			endpoint, dql.OpenAPIPath, apikey, timeRange)
 		c.Private[funcs.PDQLCli] = dqlCli
 	}
 }

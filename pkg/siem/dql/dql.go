@@ -58,32 +58,33 @@ type DQLCliOpenAPI struct {
 	URL      string
 
 	APIKey string
-
 	WSUUID string
+
+	TimeRange []int64
 }
 
 type DQLCliKodo struct {
-	URL string
-
-	WSToken string
-
-	WSUUID string
+	URL       string
+	WSUUID    string
+	TimeRange []int64
 }
 
-func NewDQLKodo(url, uuid string) *DQLCliKodo {
+func NewDQLKodo(url, uuid string, timeRange []int64) *DQLCliKodo {
 	return &DQLCliKodo{
-		URL:    url,
-		WSUUID: uuid,
+		URL:       url,
+		WSUUID:    uuid,
+		TimeRange: timeRange,
 	}
 }
 
-func NewDQLOpenAPI(endpoint, path, key string) *DQLCliOpenAPI {
+func NewDQLOpenAPI(endpoint, path, key string, timeRange []int64) *DQLCliOpenAPI {
 	u, _ := url.JoinPath(endpoint, path)
 	return &DQLCliOpenAPI{
-		Endpoint: endpoint,
-		Path:     path,
-		URL:      u,
-		APIKey:   key,
+		Endpoint:  endpoint,
+		Path:      path,
+		URL:       u,
+		APIKey:    key,
+		TimeRange: timeRange,
 	}
 }
 
@@ -104,7 +105,9 @@ func (cli *DQLCliKodo) Query(q, qTyp string, limit, offset, slimit int64, timeRa
 	}
 
 	if len(timeRange) == 2 {
-		query["timeRange"] = timeRange
+		query["time_range"] = timeRange
+	} else if len(cli.TimeRange) == 2 {
+		query["time_range"] = cli.TimeRange
 	}
 
 	b, err := json.Marshal(map[string]any{
@@ -183,6 +186,8 @@ func (cli *DQLCliOpenAPI) Query(q, qTyp string, limit, offset, slimit int64, tim
 
 	if len(timeRange) == 2 {
 		query["timeRange"] = timeRange
+	} else if len(cli.TimeRange) == 2 {
+		query["timeRange"] = cli.TimeRange
 	}
 
 	b, err := json.Marshal(map[string]any{

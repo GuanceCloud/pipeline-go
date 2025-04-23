@@ -83,7 +83,7 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	if err := siem.Run(name, script,
-		siem.WithDQLOpenAPI(openapiEndpoint, openapiKey),
+		siem.WithDQLOpenAPI(openapiEndpoint, openapiKey, nil),
 		siem.WithFuncs(funcs.Funcs),
 		siem.WithStdout(os.Stdout),
 		siem.WithTrigger(tr),
