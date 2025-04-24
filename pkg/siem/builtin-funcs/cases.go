@@ -213,11 +213,11 @@ var cTrigger = &FuncExample{
 			Name: "trigger",
 			Script: `trigger(1, "critical", {"tag_abc": "1"}, {"a": "1", "a1": 2.1})
 
-trigger(2, dim_tags={"a": "1", "b": "2"}, extra_data={"b": {}})
+trigger(2, dim_tags={"a": "1", "b": "2"}, related_data={"b": {}})
 
-trigger(false, extra_data={"a": 1, "b": 2}, level="critical")
+trigger(false, related_data={"a": 1, "b": 2}, level="critical")
 
-trigger("hello",  dim_tags={},extra_data={"a": 1, "b": [1]}, level="critical")
+trigger("hello",  dim_tags={}, related_data={"a": 1, "b": [1]}, level="critical")
 `,
 			TriggerResult: []trigger.Data{
 				{

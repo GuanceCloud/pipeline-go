@@ -33,8 +33,8 @@ var FnTriggerDesc = runtimev2.FnDesc{
 			},
 		},
 		{
-			Name: "extra_data",
-			Desc: "Extra data.",
+			Name: "related_data",
+			Desc: "Related data.",
 			Typs: []ast.DType{ast.Map},
 			Val: func() any {
 				return map[string]any{}
