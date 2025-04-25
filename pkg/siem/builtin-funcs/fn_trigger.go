@@ -18,7 +18,7 @@ var FnTriggerDesc = runtimev2.FnDesc{
 		},
 		{
 			Name: "level",
-			Desc: "Event Level. One of: (`critical`, `high`, `medium`, `low`, `info`).",
+			Desc: "Event level. One of: (`critical`, `high`, `medium`, `low`, `info`).",
 			Typs: []ast.DType{ast.String},
 			Val: func() any {
 				return ""
@@ -73,10 +73,10 @@ func FnTrigger(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	extraData, err := runtimev2.GetParamMap(ctx, expr, FnTriggerDesc.Params, 3)
+	relatedData, err := runtimev2.GetParamMap(ctx, expr, FnTriggerDesc.Params, 3)
 	if err != nil {
 		return err
 	}
-	tr.Trigger(result, level, dimTags, extraData)
+	tr.Trigger(result, level, dimTags, relatedData)
 	return nil
 }

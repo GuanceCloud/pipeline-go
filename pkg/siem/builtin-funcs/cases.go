@@ -221,30 +221,45 @@ trigger("hello",  dim_tags={}, related_data={"a": 1, "b": [1]}, level="critical"
 `,
 			TriggerResult: []trigger.Data{
 				{
-					Result:    int64(1),
-					Level:     "critical",
-					DimTags:   map[string]string{"tag_abc": "1"},
-					ExtraData: map[string]any{"a": "1", "a1": float64(2.1)},
+					Result:      int64(1),
+					Level:       "critical",
+					DimTags:     map[string]string{"tag_abc": "1"},
+					RelatedData: map[string]any{"a": "1", "a1": float64(2.1)},
 				},
 				{
-					Result:    int64(2),
-					Level:     "",
-					DimTags:   map[string]string{"a": "1", "b": "2"},
-					ExtraData: map[string]any{"b": map[string]any{}},
+					Result:      int64(2),
+					Level:       "",
+					DimTags:     map[string]string{"a": "1", "b": "2"},
+					RelatedData: map[string]any{"b": map[string]any{}},
 				},
 				{
-					Result:    false,
-					Level:     "critical",
-					DimTags:   map[string]string{},
-					ExtraData: map[string]any{"a": int64(1), "b": int64(2)},
+					Result:      false,
+					Level:       "critical",
+					DimTags:     map[string]string{},
+					RelatedData: map[string]any{"a": int64(1), "b": int64(2)},
 				},
 				{
-					Result:    "hello",
-					Level:     "critical",
-					DimTags:   map[string]string{},
-					ExtraData: map[string]any{"a": int64(1), "b": []any{int64(1)}},
+					Result:      "hello",
+					Level:       "critical",
+					DimTags:     map[string]string{},
+					RelatedData: map[string]any{"a": int64(1), "b": []any{int64(1)}},
 				},
 			},
 		},
 	},
 }
+
+// cGeoIP = &FuncExample{
+// 	FnName: FnGeoIPDesc.Name,
+// 	Progs: []ProgCase{
+// 		{
+// 			Name: "geoip",
+// 			Script: `v, ok = geoip("8.8.8.8")
+// if ok {
+// 	printf("%v", v)
+// }
+// `,
+// 			Stdout: "US\n",
+// 		},
+// 	},
+// }

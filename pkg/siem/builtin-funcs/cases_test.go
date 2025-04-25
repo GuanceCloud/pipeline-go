@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/GuanceCloud/pipeline-go/pkg/siem/trigger"
@@ -13,9 +14,9 @@ import (
 )
 
 func TestDocs(t *testing.T) {
-	_, err := GenerateDocs()
+	d, err := GenerateDocs()
 	assert.NoError(t, err)
-	// _ = os.WriteFile("docs/docs.md", []byte(d), 0644)
+	_ = os.WriteFile("docs/docs.md", []byte(d), 0644)
 }
 
 func TestCases(t *testing.T) {
@@ -51,7 +52,12 @@ func runCase(t *testing.T, c ProgCase, private ...map[runtimev2.TaskP]any) {
 	}
 	o := stdout.String()
 	t.Log(o)
-	t.Log(tr.Result())
+
+	trBuf := bytes.NewBuffer([]byte{})
+	enc := json.NewEncoder(trBuf)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(tr.Result())
+	t.Log(trBuf.String())
 	if c.jsonout {
 		var v1 any
 		var v2 any

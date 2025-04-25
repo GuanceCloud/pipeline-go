@@ -17,7 +17,7 @@ Function returns:
 
 ## `b64enc` {#fn-b64enc}
 
-Function prototype: `fn b64enc(data: str) -> (str, str)`
+Function prototype: `fn b64enc(data: str) -> (str, bool)`
 
 Function description: Base64 encoding.
 
@@ -28,7 +28,7 @@ Function parameters:
 Function returns:
 
 - `str`: The encoded string.
-- `str`: Whether encoding is successful.
+- `bool`: Whether encoding is successful.
 
 ## `cast` {#fn-cast}
 
@@ -157,8 +157,8 @@ printf("result group 1: %v; %v\n", v["k2"], v["k3"])
 
 v1 = {"a":1}
 v2 = {"b":1}
-delete(key="a", src=v1)
-delete(src=v2, key="b")
+delete(key="a", m=v1)
+delete(m=v2, key="b")
 printf("result group 2: %v; %v\n", v1, v2)
 ```
 
@@ -556,16 +556,16 @@ Function returns:
 
 ## `trigger` {#fn-trigger}
 
-Function prototype: `fn trigger(result: int|float|bool|str, level: str = "", dim_tags: map = {}, extra_data: map = {})`
+Function prototype: `fn trigger(result: int|float|bool|str, level: str = "", dim_tags: map = {}, related_data: map = {})`
 
 Function description: Trigger a security event.
 
 Function parameters:
 
 - `result`: Event check result.
-- `level`: Event Level. One of: (`critical`, `high`, `medium`, `low`, `info`).
+- `level`: Event level. One of: (`critical`, `high`, `medium`, `low`, `info`).
 - `dim_tags`: Dimension tags.
-- `extra_data`: Extra data.
+- `related_data`: Related data.
 
 Function examples:
 
@@ -576,11 +576,11 @@ Script content:
 ```py
 trigger(1, "critical", {"tag_abc": "1"}, {"a": "1", "a1": 2.1})
 
-trigger(2, dim_tags={"a": "1", "b": "2"}, extra_data={"b": {}})
+trigger(2, dim_tags={"a": "1", "b": "2"}, related_data={"b": {}})
 
-trigger(false, extra_data={"a": 1, "b": 2}, level="critical")
+trigger(false, related_data={"a": 1, "b": 2}, level="critical")
 
-trigger("hello",  dim_tags={},extra_data={"a": 1, "b": [1]}, level="critical")
+trigger("hello",  dim_tags={}, related_data={"a": 1, "b": [1]}, level="critical")
 ```
 
 Standard output:
@@ -594,10 +594,10 @@ Trigger output:
     {
         "result": 1,
         "level": "critical",
-        "dim_data": {
+        "dim_tags": {
             "tag_abc": "1"
         },
-        "extra_data": {
+        "related_data": {
             "a": "1",
             "a1": 2.1
         }
@@ -605,19 +605,19 @@ Trigger output:
     {
         "result": 2,
         "level": "",
-        "dim_data": {
+        "dim_tags": {
             "a": "1",
             "b": "2"
         },
-        "extra_data": {
+        "related_data": {
             "b": {}
         }
     },
     {
         "result": false,
         "level": "critical",
-        "dim_data": {},
-        "extra_data": {
+        "dim_tags": {},
+        "related_data": {
             "a": 1,
             "b": 2
         }
@@ -625,8 +625,8 @@ Trigger output:
     {
         "result": "hello",
         "level": "critical",
-        "dim_data": {},
-        "extra_data": {
+        "dim_tags": {},
+        "related_data": {
             "a": 1,
             "b": [
                 1

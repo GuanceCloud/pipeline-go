@@ -5,10 +5,10 @@ import (
 )
 
 type Data struct {
-	Result    any               `json:"result"`
-	Level     string            `json:"level"`
-	DimTags   map[string]string `json:"dim_data"`
-	ExtraData map[string]any    `json:"extra_data"`
+	Result      any               `json:"result"`
+	Level       string            `json:"level"`
+	DimTags     map[string]string `json:"dim_tags"`
+	RelatedData map[string]any    `json:"related_data"`
 }
 
 type Trigger struct {
@@ -20,7 +20,7 @@ func NewTr() *Trigger {
 	return &Trigger{}
 }
 
-func (tr *Trigger) Trigger(result any, level string, dimTags, extraData map[string]any) {
+func (tr *Trigger) Trigger(result any, level string, dimTags, relatedData map[string]any) {
 	tr.rwMutex.Lock()
 	defer tr.rwMutex.Unlock()
 
@@ -33,10 +33,10 @@ func (tr *Trigger) Trigger(result any, level string, dimTags, extraData map[stri
 	}
 
 	tr.vals = append(tr.vals, Data{
-		Result:    result,
-		Level:     level,
-		DimTags:   tags,
-		ExtraData: extraData,
+		Result:      result,
+		Level:       level,
+		DimTags:     tags,
+		RelatedData: relatedData,
 	})
 }
 
