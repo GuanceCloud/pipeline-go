@@ -67,8 +67,8 @@ func FnB64Dec(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 			runtimev2.V{V: false, T: ast.Bool})
 	} else {
 		ctx.Regs.ReturnAppend(
-			runtimev2.V{V: res, T: ast.String},
-			runtimev2.V{V: false, T: ast.Bool})
+			runtimev2.V{V: string(res), T: ast.String},
+			runtimev2.V{V: true, T: ast.Bool})
 	}
 	return nil
 }

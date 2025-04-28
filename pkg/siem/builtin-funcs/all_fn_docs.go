@@ -36,20 +36,14 @@ func (d docs) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
-var docVarbs = func() []*DocVarb {
+func GenDocs(e map[string]*FuncExample, f map[string]*runtimev2.Fn) []*DocVarb {
 	var r []*DocVarb
-
-	m := map[string]*FuncExample{}
-	for _, v := range FnExps {
-		m[v.FnName] = v
-	}
-
-	for name, fnD := range Funcs {
+	for name, fnD := range f {
 		d := DocVarb{
 			Name:   name,
 			FnDesc: &fnD.Desc,
 		}
-		if v, ok := m[name]; ok {
+		if v, ok := e[name]; ok {
 			d.FnExp = v
 		}
 
@@ -57,7 +51,7 @@ var docVarbs = func() []*DocVarb {
 	}
 	sort.Sort(docs(r))
 	return r
-}()
+}
 
 func GenerateDocs() (string, error) {
 	var r string
@@ -91,10 +85,80 @@ func GenerateDocs() (string, error) {
 	}
 
 	b := bytes.NewBuffer([]byte{})
-	err = temp.Execute(b, docVarbs)
+	err = temp.Execute(b, GenDocs(FnExps, Funcs))
 	if err != nil {
 		return "", err
 	}
 	r = b.String()
+	return r, nil
+}
+
+type FuncElem struct {
+	Name      string           `json:"name"`
+	Signature string           `json:"signature"`
+	Desc      string           `json:"desc"`
+	Params    []*FuncElemParam `json:"params"`
+	Returns   []*FuncElemRet   `json:"returns"`
+	Examples  []*FuncElemExp   `json:"examples"`
+}
+
+type FuncElemParam struct {
+	Name string `json:"name"`
+	Desc string `json:"desc"`
+	Type string `json:"type"`
+}
+
+type FuncElemRet struct {
+	Desc string `json:"desc"`
+	Type string `json:"type"`
+}
+
+type FuncElemExp struct {
+	Code       string `json:"code"`
+	Stdout     string `json:"stdout"`
+	TriggerOut string `json:"trigger_out"`
+}
+
+func GenerateDocs2() ([]*FuncElem, error) {
+	docs := GenDocs(FnExps, Funcs)
+	r := make([]*FuncElem, 0, len(docs))
+	for _, d := range docs {
+		e := &FuncElem{
+			Name:      d.Name,
+			Signature: d.FnDesc.Signature(),
+			Desc:      d.FnDesc.Desc,
+		}
+		for _, p := range d.FnDesc.Params {
+			e.Params = append(e.Params, &FuncElemParam{
+				Name: p.Name,
+				Desc: p.Desc,
+				Type: p.TypStr(),
+			})
+		}
+		for _, p := range d.FnDesc.Returns {
+			e.Returns = append(e.Returns, &FuncElemRet{
+				Desc: p.Desc,
+				Type: p.TypStr(),
+			})
+		}
+		for _, p := range d.FnExp.Progs {
+			var trOut string
+			if len(p.TriggerResult) > 0 {
+				b := bytes.NewBuffer([]byte{})
+				enc := json.NewEncoder(b)
+				enc.SetIndent("", "    ")
+				_ = enc.Encode(p.TriggerResult)
+				trOut = b.String()
+			}
+
+			e.Examples = append(e.Examples, &FuncElemExp{
+				Code:       p.Script,
+				Stdout:     p.Stdout,
+				TriggerOut: trOut,
+			})
+		}
+
+		r = append(r, e)
+	}
 	return r, nil
 }

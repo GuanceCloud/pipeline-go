@@ -17,11 +17,43 @@ type FuncExample struct {
 	Progs  []ProgCase
 }
 
-var FnExps = []*FuncExample{}
+var FnExps = map[string]*FuncExample{}
 
 func AddExps(f *FuncExample) struct{} {
-	FnExps = append(FnExps, f)
+	FnExps[f.FnName] = f
 	return struct{}{}
+}
+
+var _ = AddExps(cB64Dec)
+var cB64Dec = &FuncExample{
+	FnName: FnB64DecDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name: "b64dec",
+			Script: `v = "aGVsbG8sIHdvcmxk"
+v, ok = b64dec(v)
+if ok {
+	printf("%v", v)
+}
+`,
+			Stdout: "hello, world",
+		},
+	},
+}
+
+var _ = AddExps(cB64Enc)
+var cB64Enc = &FuncExample{
+	FnName: FnB64EncDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name: "b64enc",
+			Script: `v = "hello, world"
+v = b64enc(v)
+printf("%v", v)
+`,
+			Stdout: "aGVsbG8sIHdvcmxk",
+		},
+	},
 }
 
 var _ = AddExps(cCast)
@@ -206,6 +238,39 @@ if ok {
     ],
     "status_code": 200
 }`},
+	},
+}
+
+var _ = AddExps(cDumpJSON)
+var cDumpJSON = &FuncExample{
+	FnName: FnDumpJSONDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name: "dump_json",
+			Script: `v = {"a": 1, "b": 2.1}
+v, ok = dump_json(v)
+if ok {
+	printf("%v", v)
+}
+`,
+			jsonout: true,
+			Stdout:  "{\"a\":1,\"b\":2.1}\n",
+		},
+		{
+			Name: "dump_json",
+			Script: `v = {"a": 1, "b": 2.1}
+v, ok = dump_json(v, "  ")
+if ok {
+	printf("%v", v)
+}
+`,
+			jsonout: true,
+			Stdout: `{
+  "a": 1,
+  "b": 2.1
+}
+`,
+		},
 	},
 }
 
@@ -599,6 +664,19 @@ printf("%s", v)
 	},
 }
 
+var _ = AddExps(cPrintf)
+var cPrintf = &FuncExample{
+	FnName: FnPrintfDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name: "printf",
+			Script: `printf("hello, %s", "world")
+`,
+			Stdout: "hello, world",
+		},
+	},
+}
+
 var _ = AddExps(cReplace)
 var cReplace = &FuncExample{
 	FnName: FnReplaceDesc.Name,
@@ -714,7 +792,7 @@ var cTrim = &FuncExample{
 
 var _ = AddExps(cUppercase)
 var cUppercase = &FuncExample{
-	FnName: FnLowercaseDesc.Name,
+	FnName: FnUppercaseDesc.Name,
 	Progs: []ProgCase{
 		{
 			Name: "upper_case",

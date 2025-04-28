@@ -18,6 +18,15 @@ func TestDocs(t *testing.T) {
 	_ = os.WriteFile("docs/docs.md", []byte(d), 0644)
 }
 
+func TestDocsJSON(t *testing.T) {
+	d, _ := GenerateDocs2()
+	b := bytes.NewBuffer([]byte{})
+	enc := json.NewEncoder(b)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(d)
+	t.Log(b.String())
+}
+
 func runCase(t *testing.T, c ProgCase, private ...map[runtimev2.TaskP]any) {
 	s, err := engine.ParseV2(c.Name, c.Script, Funcs)
 	if err != nil {

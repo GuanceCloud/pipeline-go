@@ -15,6 +15,25 @@ Function returns:
 - `str`: The decoded string.
 - `bool`: Whether decoding is successful.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v = "aGVsbG8sIHdvcmxk"
+v, ok = b64dec(v)
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+hello, world
+```
 ## `b64enc` {#fn-b64enc}
 
 Function prototype: `fn b64enc(data: str) -> (str, bool)`
@@ -30,6 +49,23 @@ Function returns:
 - `str`: The encoded string.
 - `bool`: Whether encoding is successful.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v = "hello, world"
+v = b64enc(v)
+printf("%v", v)
+```
+
+Standard output:
+
+```txt
+aGVsbG8sIHdvcmxk
+```
 ## `cast` {#fn-cast}
 
 Function prototype: `fn cast(val: bool|int|float|str, typ: str) -> bool|int|float|str`
@@ -293,6 +329,45 @@ Function returns:
 - `str`: JSON encoding of v.
 - `bool`: Whether decoding is successful.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v = {"a": 1, "b": 2.1}
+v, ok = dump_json(v)
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+{"a":1,"b":2.1}
+```
+* CASE 1:
+
+Script content:
+
+```py
+v = {"a": 1, "b": 2.1}
+v, ok = dump_json(v, "  ")
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+{
+  "a": 1,
+  "b": 2.1
+}
+```
 ## `exit` {#fn-exit}
 
 Function prototype: `fn exit()`
@@ -738,13 +813,13 @@ Function examples:
 Script content:
 
 ```py
-printf("%s", uppercase("abc"))
+printf("%s", lowercase("ABC"))
 ```
 
 Standard output:
 
 ```txt
-ABC
+abc
 ```
 ## `match` {#fn-match}
 
@@ -975,6 +1050,21 @@ Function parameters:
 - `format`: String format.
 - `args`: Argument list, corresponding to the format specifiers in the format string.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+printf("hello, %s", "world")
+```
+
+Standard output:
+
+```txt
+hello, world
+```
 ## `replace` {#fn-replace}
 
 Function prototype: `fn replace(input: str, pattern: str, replacement: str) -> (str, bool)`
@@ -1313,6 +1403,21 @@ Function returns:
 
 - `str`: Returns the uppercase value.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+printf("%s", uppercase("abc"))
+```
+
+Standard output:
+
+```txt
+ABC
+```
 ## `url_decode` {#fn-url_decode}
 
 Function prototype: `fn url_decode(val: str) -> (str, bool)`
