@@ -31,8 +31,8 @@ var FnParseDurationDesc = runtimev2.FnDesc{
 			Typs: []ast.DType{ast.Int},
 		},
 		{
-			Desc: "The duration in nanoseconds.",
-			Typs: []ast.DType{ast.Int},
+			Desc: "Whether the duration is valid.",
+			Typs: []ast.DType{ast.Bool},
 		},
 	},
 }

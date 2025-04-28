@@ -55,7 +55,7 @@ func FnGeoIP(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 
 func GeoIPHandle(db ipdb.IPdb, ip string) (map[string]any, error) {
 	if db == nil {
-		return nil, nil
+		return map[string]any{}, nil
 	}
 
 	record, err := db.Geo(ip)
@@ -65,10 +65,16 @@ func GeoIPHandle(db ipdb.IPdb, ip string) (map[string]any, error) {
 
 	res := map[string]any{}
 
-	res["city"] = record.City
-	res["province"] = record.Region
-	res["country"] = record.Country
-	res["isp"] = record.Isp
-
+	if record != nil {
+		res["city"] = record.City
+		res["province"] = record.Region
+		res["country"] = record.Country
+		res["isp"] = record.Isp
+	} else {
+		res["city"] = ""
+		res["province"] = ""
+		res["country"] = ""
+		res["isp"] = "unknown"
+	}
 	return res, nil
 }

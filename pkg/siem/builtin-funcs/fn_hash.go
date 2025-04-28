@@ -36,10 +36,6 @@ var FnHashDesc = runtimev2.FnDesc{
 			Desc: "The hash value.",
 			Typs: []ast.DType{ast.String},
 		},
-		{
-			Desc: "Hash calculation status.",
-			Typs: []ast.DType{ast.Bool},
-		},
 	},
 }
 
@@ -75,14 +71,12 @@ func FnHash(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	default:
 		ctx.Regs.ReturnAppend(
 			runtimev2.V{V: "", T: ast.String},
-			runtimev2.V{V: false, T: ast.Bool},
 		)
 		return nil
 	}
 
 	ctx.Regs.ReturnAppend(
 		runtimev2.V{V: sum, T: ast.String},
-		runtimev2.V{V: true, T: ast.Bool},
 	)
 	return nil
 

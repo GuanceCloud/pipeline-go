@@ -36,6 +36,10 @@ var FnReplaceDesc = runtimev2.FnDesc{
 			Desc: "The string with text replaced.",
 			Typs: []ast.DType{ast.String},
 		},
+		{
+			Desc: "True if the pattern was found and replaced, false otherwise.",
+			Typs: []ast.DType{ast.Bool},
+		},
 	},
 }
 

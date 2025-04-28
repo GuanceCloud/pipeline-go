@@ -317,6 +317,37 @@ Standard output:
 1
 2
 ```
+## `format_int` {#fn-format_int}
+
+Function prototype: `fn format_int(val: int, base: int) -> str`
+
+Function description: Formats an integer into a string.
+
+Function parameters:
+
+- `val`: The integer to format.
+- `base`: The base to use for formatting. Must be between 2 and 36.
+
+Function returns:
+
+- `str`: The formatted string.
+
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v = format_int(16, 16)
+printf("%s", v)
+```
+
+Standard output:
+
+```txt
+10
+```
 ## `geoip` {#fn-geoip}
 
 Function prototype: `fn geoip(ip: str) -> map`
@@ -331,6 +362,44 @@ Function returns:
 
 - `map`: IP geographical information.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v = geoip("127.0.0.1")
+printf("%v", v)
+```
+
+Standard output:
+
+```txt
+{"city":"","country":"","isp":"unknown","province":""}
+```
+* CASE 1:
+
+Script content:
+
+```py
+ip_addr = "114.114.114.114"
+v, ok = dump_json(geoip(ip_addr), "    ");
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+ {
+    "city": "Ji'an",
+    "country": "CN",
+    "isp": "chinanet",
+    "province": "Jiangxi"
+}
+```
 ## `gjson` {#fn-gjson}
 
 Function prototype: `fn gjson(input: str, json_path: str) -> (bool|int|float|str|list|map, bool)`
@@ -347,6 +416,81 @@ Function returns:
 - `bool|int|float|str|list|map`: Parsed result.
 - `bool`: Parsed status.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v='''{
+    "name": {"first": "Tom", "last": "Anderson"},
+    "age": 37,
+    "children": ["Sara","Alex","Jack"],
+    "fav.movie": "Deer Hunter",
+    "friends": [
+        {"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},
+        {"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]},
+        {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
+    ]
+}'''
+age, ok = gjson(v, "age")
+if ok {
+	printf("%.0f", age)
+} else {
+	printf("not found")
+}
+```
+
+Standard output:
+
+```txt
+37
+```
+* CASE 1:
+
+Script content:
+
+```py
+v='''{
+    "name": {"first": "Tom", "last": "Anderson"},
+    "age": 37,
+    "children": ["Sara","Alex","Jack"],
+    "fav.movie": "Deer Hunter",
+    "friends": [
+        {"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},
+        {"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]},
+        {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
+    ]
+}'''
+name, ok = gjson(v, "name")
+printf("%v", name)
+```
+
+Standard output:
+
+```txt
+{"first": "Tom", "last": "Anderson"}
+```
+* CASE 2:
+
+Script content:
+
+```py
+v='''[
+    {"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},
+    {"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]},
+    {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
+]'''
+net, ok = gjson(v, "0.nets.2")
+printf("%v", net)
+```
+
+Standard output:
+
+```txt
+tw
+```
 ## `grok` {#fn-grok}
 
 Function prototype: `fn grok(input: str, pattern: str, extra_patterns: map = {}, trim_space: bool = true) -> (map, bool)`
@@ -365,9 +509,46 @@ Function returns:
 - `map`: The parsed result.
 - `bool`: Whether the parsing was successful.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+app_log="2021-01-11T17:43:51.887+0800  DEBUG io  io/io.go:458  post cost 6.87021ms"
+
+# Use built-in patterns, named capture groups, custom patterns, extract fields;
+# convert the type of the extracted field by specifying the type.
+v, ok = grok(
+	app_log,
+	"%{TIMESTAMP_ISO8601:log_time}\\s+(?P<log_level>[a-zA-Z]+)\\s+%{WORD}\\s+%{log_code_pos_pattern:log_code_pos}.*\\s%{NUMBER:log_cost:float}ms", 
+	{
+		"log_code_pos_pattern": "[a-zA-Z0-9/\\.]+:\\d+", 
+	}
+)
+
+if ok {
+	v, ok = dump_json(v, "  ")
+	if ok {
+		printf("%v", v)
+	}
+}
+```
+
+Standard output:
+
+```txt
+{
+  "log_code_pos": "io/io.go:458",
+  "log_cost": 6.87021,
+  "log_level": "DEBUG",
+  "log_time": "2021-01-11T17:43:51.887+0800"
+}
+```
 ## `hash` {#fn-hash}
 
-Function prototype: `fn hash(text: str, method: str) -> (str, bool)`
+Function prototype: `fn hash(text: str, method: str) -> str`
 
 Function description: 
 
@@ -379,13 +560,79 @@ Function parameters:
 Function returns:
 
 - `str`: The hash value.
-- `bool`: Hash calculation status.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+printf("%v", hash("abc", "md5"))
+```
+
+Standard output:
+
+```txt
+900150983cd24fb0d6963f7d28e17f72
+```
+* CASE 1:
+
+Script content:
+
+```py
+printf("%v", hash("abc", "sha1"))
+```
+
+Standard output:
+
+```txt
+a9993e364706816aba3e25717850c26c9cd0d89d
+```
+* CASE 2:
+
+Script content:
+
+```py
+printf("%v", hash("abc", "sha256"))
+```
+
+Standard output:
+
+```txt
+ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+```
+* CASE 3:
+
+Script content:
+
+```py
+printf("%v", hash("abc", "sha512"))
+```
+
+Standard output:
+
+```txt
+ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f
+```
+* CASE 4:
+
+Script content:
+
+```py
+printf("%v", hash("abc", "xx"))
+```
+
+Standard output:
+
+```txt
+
+```
 ## `len` {#fn-len}
 
 Function prototype: `fn len(val: map|list|str) -> int`
 
-Function description: Get the length of the value. If the value is a string, returns the length of the string. If the value is a list or map, returns the length of the list or map. If it is neither, returns -1.
+Function description: Get the length of the value. If the value is a string, returns the length of the string. If the value is a list or map, returns the length of the list or map.
 
 Function parameters:
 
@@ -395,6 +642,47 @@ Function returns:
 
 - `int`: The length of the value.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+printf("%v", len("abc"))
+```
+
+Standard output:
+
+```txt
+3
+```
+* CASE 1:
+
+Script content:
+
+```py
+printf("%v", len([1, 2, 3]))
+```
+
+Standard output:
+
+```txt
+3
+```
+* CASE 2:
+
+Script content:
+
+```py
+printf("%v", len({"a": 1, "b": 2, "c": 3}))
+```
+
+Standard output:
+
+```txt
+3
+```
 ## `load_json` {#fn-load_json}
 
 Function prototype: `fn load_json(val: str) -> (bool|int|float|str|list|map, bool)`
@@ -410,6 +698,25 @@ Function returns:
 - `bool|int|float|str|list|map`: Unmarshal result.
 - `bool`: Unmarshal status.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+jstr = '{"a": 1, "b": 2, "c": 3}'
+v, ok = load_json(jstr)
+if ok {
+	printf("%v", v["b"])
+}
+```
+
+Standard output:
+
+```txt
+2
+```
 ## `lowercase` {#fn-lowercase}
 
 Function prototype: `fn lowercase(val: str) -> str`
@@ -424,9 +731,24 @@ Function returns:
 
 - `str`: Returns the lowercase value.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+printf("%s", uppercase("abc"))
+```
+
+Standard output:
+
+```txt
+ABC
+```
 ## `match` {#fn-match}
 
-Function prototype: `fn match(val: str, pattern: str) -> (list, bool)`
+Function prototype: `fn match(val: str, pattern: str, n: int = 1) -> (list, bool)`
 
 Function description: Regular expression matching.
 
@@ -434,12 +756,49 @@ Function parameters:
 
 - `val`: The string to match.
 - `pattern`: Regular expression pattern.
+- `n`: The number of matches to return. Defaults to 1, -1 for all matches.
 
 Function returns:
 
 - `list`: Returns the matched value.
 - `bool`: Returns true if the regular expression matches.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+text="abc def 123 abc def 123"
+v, ok = match(text, "(abc) (?:def) (?P<named_group>123)")
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+[["abc def 123","abc","123"]]
+```
+* CASE 1:
+
+Script content:
+
+```py
+text="abc def 123 abc def 123"
+v, ok = match(text, "(abc) (?:def) (?P<named_group>123)", -1)
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+[["abc def 123","abc","123"],["abc def 123","abc","123"]]
+```
 ## `parse_date` {#fn-parse_date}
 
 Function prototype: `fn parse_date(date: str, timezone: str = "") -> (int, bool)`
@@ -456,9 +815,59 @@ Function returns:
 - `int`: The parsed timestamp in nanoseconds.
 - `bool`: Whether the parsing was successful.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v, ok = parse_date("2021-12-2T11:55:43.123+0800")
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+1638417343123000000
+```
+* CASE 1:
+
+Script content:
+
+```py
+v, ok = parse_date("2021-12-2T11:55:43.123", "+8")
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+1638417343123000000
+```
+* CASE 2:
+
+Script content:
+
+```py
+v, ok = parse_date("2021-12-2T11:55:43.123", "Asia/Shanghai")
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+1638417343123000000
+```
 ## `parse_duration` {#fn-parse_duration}
 
-Function prototype: `fn parse_duration(s: str) -> (int, int)`
+Function prototype: `fn parse_duration(s: str) -> (int, bool)`
 
 Function description: Parses a golang duration string into a duration. A duration string is a sequence of possibly signed decimal numbers with optional fraction and unit suffixes for each number, such as `300ms`, `-1.5h` or `2h45m`. Valid units are `ns`, `us` (or `μs`), `ms`, `s`, `m`, `h`. 
 
@@ -469,8 +878,42 @@ Function parameters:
 Function returns:
 
 - `int`: The duration in nanoseconds.
-- `int`: The duration in nanoseconds.
+- `bool`: Whether the duration is valid.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v, ok = parse_duration("1s")
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+1000000000
+```
+* CASE 1:
+
+Script content:
+
+```py
+v, ok = parse_duration("100ns")
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+100
+```
 ## `parse_int` {#fn-parse_int}
 
 Function prototype: `fn parse_int(val: str, base: int) -> (int, bool)`
@@ -480,13 +923,47 @@ Function description: Parses a string into an integer.
 Function parameters:
 
 - `val`: The string to parse.
-- `base`: The base to use for parsing.
+- `base`: The base to use for parsing. Must be between 2 and 36.
 
 Function returns:
 
 - `int`: The parsed integer.
 - `bool`: Whether the parsing was successful.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v, ok = parse_int("123", 10)
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+123
+```
+* CASE 1:
+
+Script content:
+
+```py
+v, ok = parse_int("123", 16)	
+if ok {
+	printf("%v", v)
+}
+```
+
+Standard output:
+
+```txt
+291
+```
 ## `printf` {#fn-printf}
 
 Function prototype: `fn printf(format: str, args: ...str|bool|int|float|list|map)`
@@ -500,7 +977,7 @@ Function parameters:
 
 ## `replace` {#fn-replace}
 
-Function prototype: `fn replace(input: str, pattern: str, replacement: str) -> str`
+Function prototype: `fn replace(input: str, pattern: str, replacement: str) -> (str, bool)`
 
 Function description: Replaces text in a string.
 
@@ -513,7 +990,38 @@ Function parameters:
 Function returns:
 
 - `str`: The string with text replaced.
+- `bool`: True if the pattern was found and replaced, false otherwise.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v, ok = replace("abcdef", "bc", "123")
+printf("%s", v)
+```
+
+Standard output:
+
+```txt
+a123def
+```
+* CASE 1:
+
+Script content:
+
+```py
+v, ok = replace("bonjour; 你好", "[\u4e00-\u9fa5]+", "hello")
+printf("%s", v)
+```
+
+Standard output:
+
+```txt
+bonjour; hello
+```
 ## `sql_cover` {#fn-sql_cover}
 
 Function prototype: `fn sql_cover(val: str) -> (str, bool)`
@@ -529,9 +1037,59 @@ Function returns:
 - `str`: The obfuscated sql.
 - `bool`: The obfuscate status.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v, ok = sql_cover("select abc from def where x > 3 and y < 5")
+if ok {
+	printf("%s",v)
+}
+```
+
+Standard output:
+
+```txt
+select abc from def where x > ? and y < ?
+```
+* CASE 1:
+
+Script content:
+
+```py
+v, ok = sql_cover("SELECT $func$INSERT INTO table VALUES ('a', 1, 2)$func$ FROM users")
+if ok {
+	printf("%s",v)
+}
+```
+
+Standard output:
+
+```txt
+SELECT ? FROM users
+```
+* CASE 2:
+
+Script content:
+
+```py
+v, ok = sql_cover("SELECT ('/uffd')")
+if ok {
+	printf("%s",v)
+}
+```
+
+Standard output:
+
+```txt
+SELECT ( ? )
+```
 ## `strfmt` {#fn-strfmt}
 
-Function prototype: `fn strfmt(format: str, args: ...bool|int|float|str|list|map)`
+Function prototype: `fn strfmt(format: str, args: ...bool|int|float|str|list|map) -> str`
 
 Function description: 
 
@@ -540,6 +1098,26 @@ Function parameters:
 - `format`: String format.
 - `args`: Parameters to replace placeholders.
 
+Function returns:
+
+- `str`: String.
+
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v = strfmt("abc %s def %d", "123", 456)
+printf("%s", v)
+```
+
+Standard output:
+
+```txt
+abc 123 def 456
+```
 ## `time_now` {#fn-time_now}
 
 Function prototype: `fn time_now(precision: str = "ns") -> int`
@@ -554,6 +1132,21 @@ Function returns:
 
 - `int`: Returns the current timestamp.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+printf("%v", time_now("s"))
+```
+
+Standard output:
+
+```txt
+1745823860
+```
 ## `trigger` {#fn-trigger}
 
 Function prototype: `fn trigger(result: int|float|bool|str, level: str = "", dim_tags: map = {}, related_data: map = {})`
@@ -652,6 +1245,60 @@ Function returns:
 
 - `str`: The trimmed string.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+printf("%s", trim(" abcdef "))
+```
+
+Standard output:
+
+```txt
+abcdef
+```
+* CASE 1:
+
+Script content:
+
+```py
+printf("%s", trim("#-abcdef-#", "-#", 2))
+```
+
+Standard output:
+
+```txt
+#-abcdef
+```
+* CASE 2:
+
+Script content:
+
+```py
+printf("%s", trim("#-abcdef-#", "-#", 1))
+```
+
+Standard output:
+
+```txt
+abcdef-#
+```
+* CASE 3:
+
+Script content:
+
+```py
+printf("%s", trim("#-abcdef-#", side=0, cutset="-#"))
+```
+
+Standard output:
+
+```txt
+abcdef
+```
 ## `uppercase` {#fn-uppercase}
 
 Function prototype: `fn uppercase(val: str) -> str`
@@ -681,6 +1328,24 @@ Function returns:
 - `str`: The decoded string.
 - `bool`: The decoding status.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v, ok = url_decode("https:%2F%2Fkubernetes.io%2Fdocs%2Freference%2Faccess-authn-authz%2Fbootstrap-tokens%2F")
+if ok {
+	printf("%s", v)
+}
+```
+
+Standard output:
+
+```txt
+https://kubernetes.io/docs/reference/access-authn-authz/bootstrap-tokens/
+```
 ## `url_parse` {#fn-url_parse}
 
 Function prototype: `fn url_parse(url: str) -> (map, bool)`
@@ -696,6 +1361,37 @@ Function returns:
 - `map`: Returns the parsed URL as a map.
 - `bool`: Returns true if the URL is valid.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v, ok = url_parse("http://www.example.com:8080/path/to/file?query=abc")
+if ok {
+	v, ok = dump_json(v, "  ")
+	if ok {
+		printf("%v", v)
+	}
+}
+```
+
+Standard output:
+
+```txt
+{
+  "host": "www.example.com:8080",
+  "params": {
+    "query": [
+      "abc"
+    ]
+  },
+  "path": "/path/to/file",
+  "port": "8080",
+  "scheme": "http"
+}
+```
 ## `user_agent` {#fn-user_agent}
 
 Function prototype: `fn user_agent(header: str) -> map`
@@ -710,6 +1406,22 @@ Function returns:
 
 - `map`: Returns the parsed User-Agent header as a map.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v = user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36")
+printf("%s", v)
+```
+
+Standard output:
+
+```txt
+{"browser":"Chrome","browserVer":"96.0.4664.110","engine":"AppleWebKit","engineVer":"537.36","isBot":false,"isMobile":false,"os":"Intel Mac OS X 10_15_7","ua":"Macintosh"}
+```
 ## `valid_json` {#fn-valid_json}
 
 Function prototype: `fn valid_json(val: str) -> bool`
@@ -724,6 +1436,56 @@ Function returns:
 
 - `bool`: Returns true if the value is a valid JSON.
 
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+ok = valid_json("{\"a\": 1, \"b\": 2}")
+if ok {
+	printf("true")
+}
+```
+
+Standard output:
+
+```txt
+true
+```
+* CASE 1:
+
+Script content:
+
+```py
+ok = valid_json("1.1")
+if ok {
+	printf("true")
+}
+```
+
+Standard output:
+
+```txt
+true
+```
+* CASE 2:
+
+Script content:
+
+```py
+ok = valid_json("str_abc_def")
+if !ok {
+	printf("false")
+}
+```
+
+Standard output:
+
+```txt
+false
+```
 ## `value_type` {#fn-value_type}
 
 Function prototype: `fn value_type(val: str) -> str`
@@ -738,9 +1500,51 @@ Function returns:
 
 - `str`: Returns the type of the value. One of (`bool`, `int`, `float`, `str`, `list`, `map`, `nil`). If the value and the type is nil, returns `nil`.
 
-## `xml` {#fn-xml}
+Function examples:
 
-Function prototype: `fn xml(input: str, xpath: str) -> (str, bool)`
+* CASE 0:
+
+Script content:
+
+```py
+v = value_type(1)
+printf("%s", v)
+```
+
+Standard output:
+
+```txt
+int
+```
+* CASE 1:
+
+Script content:
+
+```py
+printf("%s", value_type("abc"))
+```
+
+Standard output:
+
+```txt
+str
+```
+* CASE 2:
+
+Script content:
+
+```py
+printf("%s", value_type(true))
+```
+
+Standard output:
+
+```txt
+bool
+```
+## `xml_query` {#fn-xml_query}
+
+Function prototype: `fn xml_query(input: str, xpath: str) -> (str, bool)`
 
 Function description: Returns the value of an XML field.
 
@@ -753,3 +1557,50 @@ Function returns:
 
 - `str`: Returns the value of the XML field.
 - `bool`: Returns true if the field exists, false otherwise.
+
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+xml_data='''
+<OrderEvent actionCode = "5">
+ <OrderNumber>ORD12345</OrderNumber>
+ <VendorNumber>V11111</VendorNumber>
+ </OrderEvent>
+'''
+v, ok = xml_query(xml_data, "/OrderEvent/OrderNumber/text()")
+if ok {
+	printf("%s", v)
+}
+```
+
+Standard output:
+
+```txt
+ORD12345
+```
+* CASE 1:
+
+Script content:
+
+```py
+xml_data='''
+<OrderEvent actionCode = "5">
+ <OrderNumber>ORD12345</OrderNumber>
+ <VendorNumber>V11111</VendorNumber>
+ </OrderEvent>
+'''
+v, ok = xml_query(xml_data, "/OrderEvent/@actionCode")
+if ok {
+	printf("%s", v)
+}
+```
+
+Standard output:
+
+```txt
+5
+```

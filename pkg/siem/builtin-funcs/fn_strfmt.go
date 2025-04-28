@@ -23,7 +23,13 @@ var FnStrFmtDesc = runtimev2.FnDesc{
 			Variable: true,
 		},
 	},
-	Returns: []*runtimev2.Param{},
+	Returns: []*runtimev2.Param{
+		{
+			Name: "",
+			Desc: "String.",
+			Typs: []ast.DType{ast.String},
+		},
+	},
 }
 
 func FnStrFmtCheck(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {

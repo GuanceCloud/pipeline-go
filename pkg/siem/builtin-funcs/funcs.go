@@ -108,6 +108,11 @@ var Funcs = map[string]*runtimev2.Fn{
 		Call:      FnParseInt,
 		Desc:      FnParseIntDesc,
 	},
+	FnFormatIntDesc.Name: {
+		CallCheck: FnFormatIntChecking,
+		Call:      FnFormatInt,
+		Desc:      FnFormatIntDesc,
+	},
 	FnPrintfDesc.Name: {
 		CallCheck: FnPrintfCheck,
 		Call:      FnPrintf,

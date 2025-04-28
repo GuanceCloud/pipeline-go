@@ -34,7 +34,7 @@ var FnGrokDesc = runtimev2.FnDesc{
 			Name: "extra_patterns",
 			Desc: "Additional patterns for parsing patterns.",
 			Typs: []ast.DType{ast.Map},
-			Val:  func() any { return map[string]string{} },
+			Val:  func() any { return map[string]any{} },
 		},
 		{
 			Name: "trim_space",

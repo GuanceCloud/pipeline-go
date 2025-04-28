@@ -13,7 +13,7 @@ import (
 
 var FnLenDesc = runtimev2.FnDesc{
 	Name: "len",
-	Desc: "Get the length of the value. If the value is a string, returns the length of the string. If the value is a list or map, returns the length of the list or map. If it is neither, returns -1.",
+	Desc: "Get the length of the value. If the value is a string, returns the length of the string. If the value is a list or map, returns the length of the list or map.",
 	Params: []*runtimev2.Param{
 		{
 			Name: "val",
@@ -52,9 +52,7 @@ func FnLen(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 			runtimev2.V{V: int64(len(val)), T: ast.Int},
 		)
 	default:
-		ctx.Regs.ReturnAppend(
-			runtimev2.V{V: int64(-1), T: ast.Int},
-		)
+		return runtimev2.NewRunError(ctx, "unsupported type for len", funcExpr.NamePos)
 	}
 	return nil
 }

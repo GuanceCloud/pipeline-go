@@ -28,6 +28,12 @@ var FnMatchDesc = runtimev2.FnDesc{
 			Desc: "Regular expression pattern.",
 			Typs: []ast.DType{ast.String},
 		},
+		{
+			Name: "n",
+			Desc: "The number of matches to return. Defaults to 1, -1 for all matches.",
+			Typs: []ast.DType{ast.Int},
+			Val:  func() any { return 1 },
+		},
 	},
 	Returns: []*runtimev2.Param{
 		{
@@ -42,7 +48,7 @@ var FnMatchDesc = runtimev2.FnDesc{
 }
 
 func FnMatchCheck(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
-	return nil
+	return runtimev2.CheckPassParam(ctx, funcExpr, FnMatchDesc.Params)
 }
 
 type RegexpCache struct {
@@ -89,6 +95,11 @@ func FnMatch(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		return err
 	}
 
+	n, err := runtimev2.GetParamInt(ctx, funcExpr, FnMatchDesc.Params, 2)
+	if err != nil {
+		return err
+	}
+
 	var re *regexp.Regexp
 	if r, err := regexpCache.Get(pattern); err != nil {
 		ctx.Regs.ReturnAppend(
@@ -100,7 +111,7 @@ func FnMatch(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	}
 
 	var result []any
-	if r := re.FindAllString(val, -1); len(r) > 0 {
+	if r := re.FindAllStringSubmatch(val, int(n)); len(r) > 0 {
 		for i := range r {
 			result = append(result, r[i])
 		}

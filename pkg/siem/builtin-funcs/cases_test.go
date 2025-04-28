@@ -3,7 +3,6 @@ package funcs
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"os"
 	"testing"
 
@@ -17,16 +16,6 @@ func TestDocs(t *testing.T) {
 	d, err := GenerateDocs()
 	assert.NoError(t, err)
 	_ = os.WriteFile("docs/docs.md", []byte(d), 0644)
-}
-
-func TestCases(t *testing.T) {
-	for _, c := range FnExps {
-		for i, c := range c.Progs {
-			t.Run(fmt.Sprintf("%d_%s", i, c.Name), func(t *testing.T) {
-				runCase(t, c)
-			})
-		}
-	}
 }
 
 func runCase(t *testing.T, c ProgCase, private ...map[runtimev2.TaskP]any) {

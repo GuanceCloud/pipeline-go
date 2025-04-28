@@ -15,7 +15,7 @@ import (
 )
 
 var FnXMLDesc = runtimev2.FnDesc{
-	Name: "xml",
+	Name: "xml_query",
 	Desc: "Returns the value of an XML field.",
 	Params: []*runtimev2.Param{
 		{

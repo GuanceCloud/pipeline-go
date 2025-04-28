@@ -24,7 +24,7 @@ var FnParseIntDesc = runtimev2.FnDesc{
 		},
 		{
 			Name: "base",
-			Desc: "The base to use for parsing.",
+			Desc: "The base to use for parsing. Must be between 2 and 36.",
 			Typs: []ast.DType{ast.Int},
 		},
 	},
@@ -40,7 +40,7 @@ var FnParseIntDesc = runtimev2.FnDesc{
 	},
 }
 
-var FormatIntDesc = runtimev2.FnDesc{
+var FnFormatIntDesc = runtimev2.FnDesc{
 	Name: "format_int",
 	Desc: "Formats an integer into a string.",
 	Params: []*runtimev2.Param{
@@ -51,7 +51,7 @@ var FormatIntDesc = runtimev2.FnDesc{
 		},
 		{
 			Name: "base",
-			Desc: "The base to use for formatting.",
+			Desc: "The base to use for formatting. Must be between 2 and 36.",
 			Typs: []ast.DType{ast.Int},
 		},
 	},
@@ -91,16 +91,16 @@ func FnParseInt(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	return nil
 }
 
-func FormatIntChecking(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
-	return runtimev2.CheckPassParam(ctx, funcExpr, FormatIntDesc.Params)
+func FnFormatIntChecking(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
+	return runtimev2.CheckPassParam(ctx, funcExpr, FnFormatIntDesc.Params)
 }
 
-func FormatInt(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
-	val, err := runtimev2.GetParamInt(ctx, funcExpr, FormatIntDesc.Params, 0)
+func FnFormatInt(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
+	val, err := runtimev2.GetParamInt(ctx, funcExpr, FnFormatIntDesc.Params, 0)
 	if err != nil {
 		return err
 	}
-	base, err := runtimev2.GetParamInt(ctx, funcExpr, FormatIntDesc.Params, 1)
+	base, err := runtimev2.GetParamInt(ctx, funcExpr, FnFormatIntDesc.Params, 1)
 	if err != nil {
 		return err
 	}
