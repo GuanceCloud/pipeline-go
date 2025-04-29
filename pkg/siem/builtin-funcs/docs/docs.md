@@ -1,5 +1,52 @@
 # SIEM Built-In Function
 
+## `append` {#fn-append}
+
+Function prototype: `fn append(li: list, v: ...bool|int|float|str|list|map) -> list`
+
+Function description: Appends a value to a list.
+
+Function parameters:
+
+- `li`: The list to append to.
+- `v`: The value to append.
+
+Function returns:
+
+- `list`: The list with the appended value.
+
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v = [1, 2, 3]
+v = append(v, 4)
+printf("%v", v)
+```
+
+Standard output:
+
+```txt
+[1,2,3,4]
+```
+* CASE 1:
+
+Script content:
+
+```py
+v = [1, 2, 3]
+v = append(v, "a", 1.1)
+printf("%v", v)
+```
+
+Standard output:
+
+```txt
+[1,2,3,"a",1.1]
+```
 ## `b64dec` {#fn-b64dec}
 
 Function prototype: `fn b64dec(data: str) -> (str, bool)`
@@ -1176,6 +1223,37 @@ Standard output:
 
 ```txt
 SELECT ( ? )
+```
+## `str_join` {#fn-str_join}
+
+Function prototype: `fn str_join(li: list, sep: str) -> str`
+
+Function description: String join.
+
+Function parameters:
+
+- `li`: List to be joined with separator. The elements type need to be string, if not, they will be ignored.
+- `sep`: Separator to be used between elements.
+
+Function returns:
+
+- `str`: Joined string.
+
+Function examples:
+
+* CASE 0:
+
+Script content:
+
+```py
+v = str_join(["a", "b", "c"], "##")
+printf("%s", v)
+```
+
+Standard output:
+
+```txt
+a##b##c
 ```
 ## `strfmt` {#fn-strfmt}
 
