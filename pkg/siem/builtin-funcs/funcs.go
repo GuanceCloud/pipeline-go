@@ -13,6 +13,11 @@ import (
 var FnDocs embed.FS
 
 var Funcs = map[string]*runtimev2.Fn{
+	FnAppendDesc.Name: {
+		CallCheck: FnAppendCheck,
+		Call:      FnAppend,
+		Desc:      FnAppendDesc,
+	},
 	FnCastDesc.Name: {
 		CallCheck: FnCastCheck,
 		Call:      FnCast,
@@ -132,6 +137,11 @@ var Funcs = map[string]*runtimev2.Fn{
 		CallCheck: FnStrFmtCheck,
 		Call:      FnStrFmt,
 		Desc:      FnStrFmtDesc,
+	},
+	FnStrJoinDesc.Name: {
+		CallCheck: FnStrJoinCheck,
+		Call:      FnStrJoin,
+		Desc:      FnStrJoinDesc,
 	},
 	FnTimeNowDesc.Name: {
 		CallCheck: FnTimeNowCheck,

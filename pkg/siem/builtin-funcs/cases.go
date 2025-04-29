@@ -24,6 +24,29 @@ func AddExps(f *FuncExample) struct{} {
 	return struct{}{}
 }
 
+var _ = AddExps(cAppend)
+var cAppend = &FuncExample{
+	FnName: FnAppendDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name: "append",
+			Script: `v = [1, 2, 3]
+v = append(v, 4)
+printf("%v", v)
+`,
+			Stdout: "[1,2,3,4]",
+		},
+		{
+			Name: "append",
+			Script: `v = [1, 2, 3]
+v = append(v, "a", 1.1)
+printf("%v", v)
+`,
+			Stdout: "[1,2,3,\"a\",1.1]",
+		},
+	},
+}
+
 var _ = AddExps(cB64Dec)
 var cB64Dec = &FuncExample{
 	FnName: FnB64DecDesc.Name,
@@ -728,6 +751,20 @@ if ok {
 }
 `,
 			Stdout: "SELECT ( ? )",
+		},
+	},
+}
+
+var _ = AddExps(cStrJoin)
+var cStrJoin = &FuncExample{
+	FnName: FnStrJoinDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name: "strjoin",
+			Script: `v = str_join(["a", "b", "c"], "##")
+printf("%s", v)
+`,
+			Stdout: "a##b##c",
 		},
 	},
 }
