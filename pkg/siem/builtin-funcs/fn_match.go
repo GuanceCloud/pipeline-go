@@ -102,10 +102,7 @@ func FnMatch(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 
 	var re *regexp.Regexp
 	if r, err := regexpCache.Get(pattern); err != nil {
-		ctx.Regs.ReturnAppend(
-			runtimev2.V{V: []any(nil), T: ast.List},
-			runtimev2.V{V: false, T: ast.Bool},
-		)
+		return runtimev2.NewRunError(ctx, err.Error(), funcExpr.NamePos)
 	} else {
 		re = r
 	}

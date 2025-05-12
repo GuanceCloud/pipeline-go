@@ -109,9 +109,13 @@ func FnGrok(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 					grokRe = r
 					grokCache.Set(p.Denormalized(), r, 1)
 					grokCache.Wait()
+				} else {
+					return runtimev2.NewRunError(ctx, err.Error(), funcExpr.NamePos)
 				}
 			}
 		}
+	} else {
+		return runtimev2.NewRunError(ctx, err.Error(), funcExpr.NamePos)
 	}
 
 	r := map[string]any{}
