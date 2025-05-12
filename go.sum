@@ -12,6 +12,8 @@ github.com/GuanceCloud/influxdb1-client v0.1.8 h1:7XNICWcW+NxAHFkzQ8mkOCKA/8U2WN
 github.com/GuanceCloud/influxdb1-client v0.1.8/go.mod h1:4HC4b/O653/ezBiHMPBnHYnHCCfsNT2LvCr7wNLngw4=
 github.com/GuanceCloud/platypus v0.3.3-0.20250417080731-9a4acd7545e7 h1:V8h+1ABCpyiBKZoUzTtI/C09apzMFE/uRnpnmMvLVHs=
 github.com/GuanceCloud/platypus v0.3.3-0.20250417080731-9a4acd7545e7/go.mod h1:H9Sol/SI+A9ppJUohdn9m/UA0aiNvh+G0/GnY6IVDnI=
+github.com/GuanceCloud/platypus v0.3.3-0.20250512012153-1df43955fa8b h1:tO2q2MWsCudYdgWkxjmiENjPi6rJIDdooSCnAxEfeNg=
+github.com/GuanceCloud/platypus v0.3.3-0.20250512012153-1df43955fa8b/go.mod h1:H9Sol/SI+A9ppJUohdn9m/UA0aiNvh+G0/GnY6IVDnI=
 github.com/Microsoft/go-winio v0.5.0/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
 github.com/Microsoft/go-winio v0.5.1/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpzfwIujj1a84=
 github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migciow=
