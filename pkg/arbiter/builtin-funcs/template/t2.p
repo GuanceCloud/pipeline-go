@@ -25,6 +25,8 @@ for i = 0; i < len(series_pod_name); i+=1 {
     pods = series_pod_name[i]
     nss = series_namespace[i]
     
+    ## Do not use `i` a loop variable, since the upper loop has been defined
+    #
     for j = 0; j < len(nss); j+=1 {
         ns = nss[j]
         if ns in pods_with_ns {
@@ -34,9 +36,6 @@ for i = 0; i < len(series_pod_name); i+=1 {
         }
     }
 }
-
-
-printf("%v\n", pods_with_ns)
 
 
 ## query object
@@ -53,10 +52,10 @@ for i = 0; i < len(series_pod_name); i+=1 {
     nss = series_namespace[i]
     usage = series_usage[i]
     
-    for i = 0; i < len(nss); i+=1 {
-        ns = nss[i]
-        pod = pods[i]
-        cpu = usage[i] 
+    for j = 0; j < len(nss); j+=1 {
+        ns = nss[j]
+        pod = pods[j]
+        cpu = usage[j] 
         
         if ns in pods_with_ns && pod in pods_with_ns[ns]{
             pods_alert = append(pods_alert, {
