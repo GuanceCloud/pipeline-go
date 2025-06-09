@@ -107,7 +107,8 @@ func (cli *DQLCliOpenAPI) Query(pos token.LnColPos, q, qTyp string, limit, offse
 			if v, ok := v.(string); ok && v != "" {
 				result["error_code"] = v
 			}
-		} else if v, ok := mp["message"]; ok {
+		}
+		if v, ok := mp["message"]; ok {
 			if v, ok := v.(string); ok && v != "" {
 				result["message"] = v
 			}
