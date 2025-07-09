@@ -11,15 +11,15 @@
 示例：
 
 ```python
-add_key("len_char", strlen("hello你好"))
-add_key("len_byte", strlen("hello你好"))
+add_key("len_char", strlen("hello 你好"))
+add_key("len_byte", strlen("hello 你好"))
 ```
 
 输出：
 
 ```json
 {
- "len_char": 7,
- "len_byte": 11
+ "len_char": 8,
+ "len_byte": 12
 }
 ```
