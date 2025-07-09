@@ -15,18 +15,11 @@ import (
 )
 
 func TestSliceString(t *testing.T) {
-	funcs := []*Function{
-		FnPtKvsGet,
-		FnPtKvsDel,
-		FnPtKvsSet,
-		FnPtKvsKeys,
-		FnSliceString,
-	}
 
 	cases := []struct {
 		name, pl, in string
 		keyName      string
-		expect       interface{}
+		expect       any
 		fail         bool
 	}{
 		{
@@ -76,7 +69,7 @@ func TestSliceString(t *testing.T) {
 			pt_kvs_set("result", substring)
 			`,
 			keyName: "result",
-			expect:  "",
+			expect:  "abcdefghijklmnop",
 			fail:    false,
 		},
 		{
@@ -129,11 +122,22 @@ func TestSliceString(t *testing.T) {
 			expect:  "",
 			fail:    true,
 		},
+		{
+			name: "panic",
+			pl: `
+			val = "123你好123123123123123123123123123"
+			## len 32, cap 32
+			#
+			add_key("result", slice_string(val, 0, len(val)))
+			`,
+			keyName: "result",
+			expect:  "123你好123123123123123123123123123",
+		},
 	}
 
 	for idx, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			script, err := parseScipt(tc.pl, funcs)
+			script, err := NewTestingRunner(tc.pl)
 			if err != nil {
 				if tc.fail {
 					t.Logf("[%d]expect error: %s", idx, err)

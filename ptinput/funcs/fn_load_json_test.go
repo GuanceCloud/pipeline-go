@@ -8,6 +8,7 @@ package funcs
 import (
 	"testing"
 	"time"
+	"unicode/utf8"
 
 	"github.com/GuanceCloud/cliutils/point"
 	tu "github.com/GuanceCloud/cliutils/testutil"
@@ -107,4 +108,21 @@ func TestLoadJson(t *testing.T) {
 			t.Logf("[%d] PASS", idx)
 		})
 	}
+}
+
+func BenchmarkStrlen(b *testing.B) {
+	s := "fsdfsfweojoijbfoisjoiwejwefjweofjobisjbosjboijfsdfsfweojoijbfoisjoiwejwefjweofjobisjbosjboijfsdfsfweojoijbfoisjoiwejwefjweofjobisjbosjboijfsdfsfweojoijbfoisjoiwejwefjweofjobisjbosjboij"
+	b.Run("rune", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			x := utf8.RuneCountInString(s)
+			_ = x
+		}
+	})
+
+	b.Run("rune2", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			x := []rune(s)
+			_ = len(x)
+		}
+	})
 }
