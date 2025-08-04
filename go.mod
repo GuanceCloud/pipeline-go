@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.47.1
-	github.com/GuanceCloud/cliutils v1.1.22-0.20250423115841-118da498760e
+	github.com/GuanceCloud/cliutils v1.1.22-0.20250801034230-d6aabd6c5a53
 	github.com/GuanceCloud/grok v1.1.5-0.20250416104424-34917bd63e69
 	github.com/GuanceCloud/platypus v0.3.3-0.20250528074826-e3130ff5a05c
 	github.com/antchfx/xmlquery v1.3.18
@@ -108,7 +108,4 @@ require (
 	modernc.org/token v1.0.1 // indirect
 )
 
-replace (
-	github.com/GuanceCloud/cliutils => /Users/tanbiao/go/src/github.com/GuanceCloud/cliutils
-	github.com/influxdata/influxdb1-client => github.com/GuanceCloud/influxdb1-client v0.1.8
-)
+replace github.com/influxdata/influxdb1-client => github.com/GuanceCloud/influxdb1-client v0.1.8
