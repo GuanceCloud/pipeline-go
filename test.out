@@ -1,0 +1,3 @@
+manager/scriptstore.go:13:2: github.com/GuanceCloud/cliutils@v1.1.22-0.20250423115841-118da498760e: replacement directory /Users/tanbiao/go/src/github.com/GuanceCloud/cliutils does not exist
+ptinput/plmap/aggmap.go:15:2: github.com/GuanceCloud/cliutils@v1.1.22-0.20250423115841-118da498760e: replacement directory /Users/tanbiao/go/src/github.com/GuanceCloud/cliutils does not exist
+manager/manager.go:13:2: github.com/GuanceCloud/cliutils@v1.1.22-0.20250423115841-118da498760e: replacement directory /Users/tanbiao/go/src/github.com/GuanceCloud/cliutils does not exist
