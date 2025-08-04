@@ -307,14 +307,14 @@ func BenchmarkPtWrap(b *testing.B) {
 	messages := `127.0.0.1 - - [21/Jul/2021:14:14:38 +0800] "GET /?1 HTTP/1.1" 200 2178 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36"`
 
 	kvs := point.KVs{}
-	kvs = kvs.Add("1", 1, false, true)
-	kvs = kvs.Add("2", 2, false, true)
-	kvs = kvs.Add("message", messages, false, true)
-	kvs = kvs.Add("f", 3.14, false, true)
-	kvs = kvs.Add("4", 4, false, true)
-	kvs = kvs.Add("5", 5, false, true)
-	kvs = kvs.Add("s", "aaaaaaaaaaa", false, true)
-	pt := point.NewPointV2("abc", kvs, point.WithTime(time.Now()))
+	kvs = kvs.Set("1", 1)
+	kvs = kvs.Set("2", 2)
+	kvs = kvs.Set("message", messages)
+	kvs = kvs.Set("f", 3.14)
+	kvs = kvs.Set("4", 4)
+	kvs = kvs.Set("5", 5)
+	kvs = kvs.Set("s", "aaaaaaaaaaa")
+	pt := point.NewPoint("abc", kvs, point.WithTime(time.Now()))
 
 	fn := func(pp ptinput.PlInputPt) {
 		for i := 0; i < 50; i++ {

@@ -39,7 +39,7 @@ action,t1=tag1,t2=tag2 f1=1.0,f2=2i,f3="abc"`)
 func TestSCriptName(t *testing.T) {
 	kvs := point.NewTags(map[string]string{"service": "svc_name"})
 	kvs = append(kvs, point.NewKVs(map[string]interface{}{"message@json": "a"})...)
-	pt := point.NewPointV2("m_name",
+	pt := point.NewPoint("m_name",
 		kvs, point.DefaultLoggingOptions()...)
 
 	name, ok := manager.ScriptName(nil, point.Tracing, pt, nil)
@@ -57,7 +57,7 @@ func TestSCriptName(t *testing.T) {
 	assert.Equal(t, true, ok)
 	assert.Equal(t, "def.p", name)
 
-	pt = point.NewPointV2("m_name",
+	pt = point.NewPoint("m_name",
 		point.NewKVs(map[string]interface{}{"message@json": "a"}),
 		point.CommonLoggingOptions()...)
 	_, ok = manager.ScriptName(nil, point.Tracing, pt,
@@ -87,7 +87,7 @@ func TestSCriptName(t *testing.T) {
 	kvs = point.NewTags(ptSc.Tags().Map())
 	f, _ := ptSc.Fields()
 	kvs = append(kvs, point.NewKVs(f)...)
-	pt = point.NewPointV2(string(ptSc.Name()), kvs, point.CommonLoggingOptions()...)
+	pt = point.NewPoint(string(ptSc.Name()), kvs, point.CommonLoggingOptions()...)
 	name, ok = manager.ScriptName(nil, point.Security, pt, nil)
 	assert.Equal(t, true, ok)
 	assert.Equal(t, "system.p", name)
@@ -100,7 +100,7 @@ func TestSCriptName(t *testing.T) {
 	kvs = point.NewTags(ptSc.Tags().Map())
 	f, _ = ptSc.Fields()
 	kvs = append(kvs, point.NewKVs(f)...)
-	pt = point.NewPointV2(string(ptSc.Name()), kvs, point.CommonLoggingOptions()...)
+	pt = point.NewPoint(string(ptSc.Name()), kvs, point.CommonLoggingOptions()...)
 
 	_, ok = manager.ScriptName(nil, point.Security, pt, nil)
 	assert.Equal(t, false, ok)
@@ -113,7 +113,7 @@ func TestSCriptName(t *testing.T) {
 	kvs = point.NewTags(ptSc.Tags().Map())
 	f, _ = ptSc.Fields()
 	kvs = append(kvs, point.NewKVs(f)...)
-	pt = point.NewPointV2(string(ptSc.Name()), kvs, point.CommonLoggingOptions()...)
+	pt = point.NewPoint(string(ptSc.Name()), kvs, point.CommonLoggingOptions()...)
 
 	name, ok = manager.ScriptName(nil, point.RUM, pt, nil)
 	assert.Equal(t, true, ok)
@@ -127,7 +127,7 @@ func TestSCriptName(t *testing.T) {
 	kvs = point.NewTags(ptSc.Tags().Map())
 	f, _ = ptSc.Fields()
 	kvs = append(kvs, point.NewKVs(f)...)
-	pt = point.NewPointV2(string(ptSc.Name()), kvs, point.CommonLoggingOptions()...)
+	pt = point.NewPoint(string(ptSc.Name()), kvs, point.CommonLoggingOptions()...)
 	_, ok = manager.ScriptName(nil, point.RUM, pt, nil)
 	assert.Equal(t, false, ok)
 }
@@ -207,7 +207,7 @@ func BenchmarkScript(b *testing.B) {
 		kvs = append(kvs, point.NewKVs(map[string]interface{}{
 			"message": sJsonData,
 		})...)
-		pt := point.NewPointV2("test", kvs, point.DefaultLoggingOptions()...)
+		pt := point.NewPoint("test", kvs, point.DefaultLoggingOptions()...)
 
 		s, _ := engine.ParseScript(map[string]string{"s": sJson1}, funcs.FuncsMap, funcs.FuncsCheckMap)
 		sp := s["s"]
@@ -227,7 +227,7 @@ func BenchmarkScript(b *testing.B) {
 		kvs = append(kvs, point.NewKVs(map[string]interface{}{
 			"message": sJsonData,
 		})...)
-		pt := point.NewPointV2("test", kvs, point.DefaultLoggingOptions()...)
+		pt := point.NewPoint("test", kvs, point.DefaultLoggingOptions()...)
 
 		s, _ := engine.ParseScript(map[string]string{"s": sJson2}, funcs.FuncsMap, funcs.FuncsCheckMap)
 		sp := s["s"]
@@ -248,7 +248,7 @@ func BenchmarkScript(b *testing.B) {
 		kvs = append(kvs, point.NewKVs(map[string]interface{}{
 			"message": sJsonData,
 		})...)
-		pt := point.NewPointV2("test", kvs, point.DefaultLoggingOptions()...)
+		pt := point.NewPoint("test", kvs, point.DefaultLoggingOptions()...)
 
 		s, _ := engine.ParseScript(map[string]string{"s": sGrok1}, funcs.FuncsMap, funcs.FuncsCheckMap)
 		sp := s["s"]
@@ -268,7 +268,7 @@ func BenchmarkScript(b *testing.B) {
 		kvs = append(kvs, point.NewKVs(map[string]interface{}{
 			"message": sNginx,
 		})...)
-		pt := point.NewPointV2("test", kvs, point.DefaultLoggingOptions()...)
+		pt := point.NewPoint("test", kvs, point.DefaultLoggingOptions()...)
 
 		s, _ := engine.ParseScript(map[string]string{"s": sGrok2}, funcs.FuncsMap, funcs.FuncsCheckMap)
 		sp := s["s"]
@@ -288,7 +288,7 @@ func BenchmarkScript(b *testing.B) {
 		kvs = append(kvs, point.NewKVs(map[string]interface{}{
 			"message": sNginx,
 		})...)
-		pt := point.NewPointV2("test", kvs, point.DefaultLoggingOptions()...)
+		pt := point.NewPoint("test", kvs, point.DefaultLoggingOptions()...)
 
 		s, _ := platypus.NewScripts(
 			map[string]string{"s": sGrok2},

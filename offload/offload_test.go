@@ -34,7 +34,7 @@ func TestWkr(t *testing.T) {
 				kvs = append(kvs, point.NewKVs(map[string]interface{}{
 					"n": c + i,
 				})...)
-				r[idx][i] = point.NewPointV2(strconv.FormatInt(int64(c+i), 10), kvs, point.CommonLoggingOptions()...)
+				r[idx][i] = point.NewPoint(strconv.FormatInt(int64(c+i), 10), kvs, point.CommonLoggingOptions()...)
 			}
 			c += v
 		}

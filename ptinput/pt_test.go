@@ -22,7 +22,7 @@ type tcase struct {
 func (c *tcase) Point() *point.Point {
 	kvs := point.NewKVs(c.fiellds)
 	for k, v := range c.tags {
-		kvs = kvs.MustAddTag(k, v)
+		kvs = kvs.SetTag(k, v)
 	}
 
 	var opt []point.Option
@@ -36,7 +36,7 @@ func (c *tcase) Point() *point.Point {
 		opt = point.DefaultLoggingOptions()
 	}
 	opt = append(opt, point.WithTime(c.time))
-	return point.NewPointV2(c.name, kvs, opt...)
+	return point.NewPoint(c.name, kvs, opt...)
 }
 
 func TestPlPt(t *testing.T) {
@@ -66,7 +66,7 @@ func TestPlPt(t *testing.T) {
 }
 
 func TestPlPt2(t *testing.T) {
-	pt := point.NewPointV2("t", point.NewKVs(map[string]any{
+	pt := point.NewPoint("t", point.NewKVs(map[string]any{
 		"a1":  "1",
 		"xx2": "1",
 	}), point.WithTime(time.Now()))
@@ -181,7 +181,7 @@ func BenchmarkPts(b *testing.B) {
 	pts, err := dec.Decode([]byte(lp))
 	assert.NoError(b, err)
 	pt := pts[0]
-	pt.KVs().AddV2("message", "", true, point.WithKVTagSet(false))
+	pt.KVs().Set("message", "")
 
 	b.Run("pt_old_add", func(b *testing.B) {
 		for i := 0; i < b.N; i++ {

@@ -29,11 +29,11 @@ func TestRelation(t *testing.T) {
 	assert.False(t, ok)
 	assert.Equal(t, "", p)
 
-	name, ok := ScriptName(rl, point.Logging, point.NewPointV2("abc", point.NewKVs(map[string]interface{}{"message@json": "a"})), nil)
+	name, ok := ScriptName(rl, point.Logging, point.NewPoint("abc", point.NewKVs(map[string]interface{}{"message@json": "a"})), nil)
 	assert.True(t, ok)
 	assert.Equal(t, "a1.p", name)
 
-	name, ok = ScriptName(rl, point.Logging, point.NewPointV2("abcd", point.NewKVs(map[string]interface{}{"message@json": "a"})), map[string]string{"abcd": "a2.p"})
+	name, ok = ScriptName(rl, point.Logging, point.NewPoint("abcd", point.NewKVs(map[string]interface{}{"message@json": "a"})), map[string]string{"abcd": "a2.p"})
 	assert.True(t, ok)
 	assert.Equal(t, "a2.p", name)
 }
