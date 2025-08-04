@@ -115,7 +115,7 @@ func TestManger(t *testing.T) {
 					a := 1
 					_ = a
 				}
-				name, _ := ScriptName(rl, tt.cat, point.NewPointV2(tt.source, point.NewKVs(map[string]interface{}{
+				name, _ := ScriptName(rl, tt.cat, point.NewPoint(tt.source, point.NewKVs(map[string]interface{}{
 					"ns": tt.ns,
 				})), nil)
 				assert.Equal(t, tt.name[0], name)

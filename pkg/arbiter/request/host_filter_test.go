@@ -2,7 +2,6 @@ package request
 
 import (
 	"net"
-	"strconv"
 	"testing"
 	"time"
 
@@ -25,49 +24,44 @@ func TestHostFilte(t *testing.T) {
 			addr: "baidu.com:80",
 		},
 		{
-			name:        "test",
+			name:        "test1",
 			addr:        "baidu.com:80",
 			blockdHosts: []string{"abc.com", "baidu.com", "qq.com"},
 			blocked:     true,
 		},
 		{
-			name:         "test",
+			name:         "test2",
 			addr:         "baidu.com:80",
 			allowedHosts: []string{"abc.com", "qq.com"},
 			blocked:      true,
 		},
 		{
-			name:         "test",
+			name:         "test3",
 			addr:         "baidu.com:80",
 			allowedCIDRs: []string{"1.0.0.0/8"},
 			blocked:      true,
 		},
 		{
-			name:         "test",
-			addr:         "baidu.com:80",
-			allowedCIDRs: []string{"39.0.0.0/8", "110.0.0.0/8"},
+			name:         "test4",
+			addr:         "dns.alidns.com:80",
+			allowedCIDRs: []string{"223.0.0.0/8", "2400::/16"},
 		},
 		{
-			name:         "test",
-			addr:         "baidu.com:80",
-			allowedCIDRs: []string{"39.0.0.0/8", "110.0.0.0/8"},
-		},
-		{
-			name:        "test",
+			name:        "test5",
 			addr:        "local.ubwbu.com:1234",
 			blockdCIDRs: PrivateCIDRs(),
 			blocked:     true,
 		},
 		{
-			name:        "test",
+			name:        "test6",
 			addr:        "127.0.0.1:80",
 			blockdCIDRs: PrivateCIDRs(),
 			blocked:     true,
 		},
 	}
 
-	for i, c := range cases {
-		t.Run(strconv.FormatInt(int64(i), 10), func(t *testing.T) {
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
 			host, _, err := net.SplitHostPort(c.addr)
 			if err != nil {
 				t.Fatal(err)
