@@ -12,7 +12,7 @@ Example:
 
 ```python
 add_key("len_char", strlen("hello 你好"))
-add_key("len_byte", strlen("hello 你好"))
+add_key("len_byte", len("hello 你好"))
 ```
 
 Output:
