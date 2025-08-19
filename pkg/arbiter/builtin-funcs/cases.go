@@ -226,11 +226,11 @@ if ok {
                 },
                 "tags": {
                     "cpu": "cpu-total",
-                    "guance_site": "testing",
+                    "test_site": "testing",
                     "host": "172.16.241.111",
                     "host_ip": "172.16.241.111",
                     "name": "cpu",
-                    "project": "cloudcare-testing"
+                    "project": "demo-testing"
                 }
             },
             {
@@ -241,11 +241,11 @@ if ok {
                 },
                 "tags": {
                     "cpu": "cpu-total",
-                    "guance_site": "testing",
+                    "test_site": "testing",
                     "host": "172.16.241.111",
                     "host_ip": "172.16.241.111",
                     "name": "cpu",
-                    "project": "cloudcare-testing"
+                    "project": "demo-testing"
                 }
             }
         ],
@@ -258,11 +258,11 @@ if ok {
                 },
                 "tags": {
                     "cpu": "cpu-total",
-                    "guance_site": "testing",
+                    "test_site": "testing",
                     "host": "172.16.242.112",
                     "host_ip": "172.16.242.112",
                     "name": "cpu",
-                    "project": "cloudcare-testing"
+                    "project": "demo-testing"
                 }
             },
             {
@@ -273,11 +273,11 @@ if ok {
                 },
                 "tags": {
                     "cpu": "cpu-total",
-                    "guance_site": "testing",
+                    "test_site": "testing",
                     "host": "172.16.242.112",
                     "host_ip": "172.16.242.112",
                     "name": "cpu",
-                    "project": "cloudcare-testing"
+                    "project": "demo-testing"
                 }
             }
         ]
