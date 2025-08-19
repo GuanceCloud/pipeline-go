@@ -15,7 +15,7 @@ It aggregates and analyzes log and event data from different systems (such as se
 
 2. Execute the help command
 
-All command:
+Commands:
 
 ```sh
 $ chmod +x ./arbiter-linux-amd64
@@ -39,7 +39,7 @@ Flags:
 Use "arbiter [command] --help" for more information about a command.
 ```
 
-Run Commad:
+Command `run`:
 
 ```sh
 $ ./arbiter-linux-amd64  help run
