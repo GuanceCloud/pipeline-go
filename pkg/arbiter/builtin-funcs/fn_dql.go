@@ -14,7 +14,7 @@ import (
 
 var FnDQLDesc = runtimev2.FnDesc{
 	Name: "dql",
-	Desc: "Query data from the GuanceCloud using dql or promql.",
+	Desc: "Query data using dql or promql.",
 	Params: []*runtimev2.Param{
 		{
 			Name: "query",
