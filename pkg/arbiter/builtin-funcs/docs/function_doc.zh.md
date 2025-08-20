@@ -354,7 +354,7 @@
 
 函数原型： `fn dql(query: str, qtype: str = "dql", limit: int = 10000, offset: int = 0, slimit: int = 0, time_range: list = []) -> map`
 
-函数描述： Query data from the GuanceCloud using dql or promql.
+函数描述： Query data using dql or promql.
 
 函数参数：
 
