@@ -32,7 +32,7 @@ type IPdbRecord struct {
 func (record *IPdbRecord) CheckData() *IPdbRecord {
 	switch record.Country { // #issue 354
 	case "TW":
-		record.Country = "ROC"
+		record.Country = "CN"
 		record.Region = "Taiwan"
 	case "MO":
 		record.Country = "CN"
