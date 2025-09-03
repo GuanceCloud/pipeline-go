@@ -155,6 +155,10 @@ func (ipip *IPIP) SearchIsp(ip string) string {
 }
 
 func (ipip *IPIP) Geo(ip string) (*ipdb.IPdbRecord, error) {
+	return ipip.GeoWithChecker(ip, nil)
+}
+
+func (ipip *IPIP) GeoWithChecker(ip string, check ipdb.CheckData) (*ipdb.IPdbRecord, error) {
 	db := ipip.db
 	if db == nil {
 		return nil, fmt.Errorf("IP database not found")
@@ -183,5 +187,9 @@ func (ipip *IPIP) Geo(ip string) (*ipdb.IPdbRecord, error) {
 		rec.Country = c.CountryName
 	}
 
-	return rec.CheckData(), nil
+	if check != nil {
+		return check(rec), nil
+	} else {
+		return rec.CheckData(), nil
+	}
 }
