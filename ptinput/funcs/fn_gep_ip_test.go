@@ -20,6 +20,9 @@ type mockGEO struct{}
 
 func (m *mockGEO) Init(dataDir string, config map[string]string) {}
 func (m *mockGEO) SearchIsp(ip string) string                    { return geoDefaultVal }
+func (m *mockGEO) GeoWithChecker(ip string, check ipdb.CheckData) (*ipdb.IPdbRecord, error) {
+	return m.Geo(ip)
+}
 
 func (m *mockGEO) Geo(ip string) (*ipdb.IPdbRecord, error) {
 	return &ipdb.IPdbRecord{

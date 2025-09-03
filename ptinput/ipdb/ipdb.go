@@ -12,30 +12,12 @@ import (
 	"strings"
 )
 
-var checkdataFn func(*IPdbRecord) *IPdbRecord
-
-func SetCheckData(f func(*IPdbRecord) *IPdbRecord) {
-	checkdataFn = f
-}
-
-func defaultCheckData(record *IPdbRecord) *IPdbRecord {
-	switch record.Country { // #issue 354
-	case "TW":
-		record.Country = "CN"
-		record.Region = "Taiwan"
-	case "MO":
-		record.Country = "CN"
-		record.Region = "Macao"
-	case "HK":
-		record.Country = "CN"
-		record.Region = "Hong Kong"
-	}
-	return record
-}
+type CheckData func(*IPdbRecord) *IPdbRecord
 
 type IPdb interface {
 	Init(dataDir string, config map[string]string) //deprecated
 	Geo(ip string) (*IPdbRecord, error)
+	GeoWithChecker(ip string, check CheckData) (*IPdbRecord, error)
 	SearchIsp(ip string) string
 }
 
@@ -51,11 +33,18 @@ type IPdbRecord struct {
 }
 
 func (record *IPdbRecord) CheckData() *IPdbRecord {
-	if checkdataFn != nil {
-		return checkdataFn(record)
-	} else {
-		return defaultCheckData(record)
+	switch record.Country { // #issue 354
+	case "TW":
+		record.Country = "CN"
+		record.Region = "Taiwan"
+	case "MO":
+		record.Country = "CN"
+		record.Region = "Macao"
+	case "HK":
+		record.Country = "CN"
+		record.Region = "Hong Kong"
 	}
+	return record
 }
 
 func ParseIPCIDR(ipCidr string) (string, error) {
