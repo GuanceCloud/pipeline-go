@@ -836,6 +836,18 @@ printf("%s", v)
 	},
 }
 
+var _ = AddExps(cSetopt)
+var cSetopt = &FuncExample{
+	FnName: FnSetoptDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name:   "setopt",
+			Script: `setopt(60 * 15)`,
+			Stdout: "",
+		},
+	},
+}
+
 var _ = AddExps(cSQLCover)
 var cSQLCover = &FuncExample{
 	FnName: FnSQLCoverDesc.Name,

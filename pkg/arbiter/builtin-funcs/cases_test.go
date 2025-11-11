@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/opt"
 	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/trigger"
 	"github.com/GuanceCloud/platypus/pkg/engine"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtimev2"
@@ -44,6 +45,7 @@ func runCase(t *testing.T, c ProgCase, private ...map[runtimev2.TaskP]any) {
 		privateMap = map[runtimev2.TaskP]any{}
 	}
 
+	privateMap[POptions] = &opt.Option{}
 	stdout := bytes.NewBuffer([]byte{})
 	privateMap[PStdout] = stdout
 	tr := trigger.NewTr()

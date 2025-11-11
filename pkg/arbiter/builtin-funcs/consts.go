@@ -9,4 +9,5 @@ const (
 	PTrigger    runtimev2.TaskP = "P_TRIGGER"
 	PGeoIPDB    runtimev2.TaskP = "P_GEO_IPDB"
 	PCallFunc   runtimev2.TaskP = "P_CALL_FUNC"
+	POptions    runtimev2.TaskP = "P_OPTIONS"
 )
