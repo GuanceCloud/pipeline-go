@@ -1564,6 +1564,35 @@
 
     
 
+## `setopt` {#fn-setopt}
+
+函数原型： `fn setopt(trigger_keepalive: int)`
+
+函数描述： Set option.
+
+函数参数：
+
+- `trigger_keepalive`: Set the trigger keepalive time (seconds).
+
+
+函数示例：
+
+* 示例 0:
+
+    脚本内容：
+
+    ```txt
+    setopt(60 * 15)
+    ```
+
+    标准输出：
+
+    ```txt
+    
+    ```
+
+    
+
 ## `sql_cover` {#fn-sql_cover}
 
 函数原型： `fn sql_cover(val: str) -> (str, bool)`

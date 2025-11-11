@@ -5,6 +5,7 @@ import (
 
 	funcs "github.com/GuanceCloud/pipeline-go/pkg/arbiter/builtin-funcs"
 	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/dql"
+	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/opt"
 	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/request"
 	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/trigger"
 	"github.com/GuanceCloud/platypus/pkg/engine"
@@ -43,6 +44,12 @@ func WithDQLOpenAPI(endpoint string, apikey string, timeRange []int64) Opt {
 func WithStdout(writer io.Writer) Opt {
 	return func(c *Config) {
 		c.Private[funcs.PStdout] = writer
+	}
+}
+
+func WithOptions(options *opt.Option) Opt {
+	return func(c *Config) {
+		c.Private[funcs.POptions] = options
 	}
 }
 

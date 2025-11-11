@@ -148,6 +148,11 @@ var Funcs = map[string]*runtimev2.Fn{
 		Call:      FnReplace,
 		Desc:      FnReplaceDesc,
 	},
+	FnSetoptDesc.Name: {
+		CallCheck: FnSetoptCheck,
+		Call:      FnSetopt,
+		Desc:      *FnSetoptDesc,
+	},
 	FnSQLCoverDesc.Name: {
 		CallCheck: FnSQLCoverCheck,
 		Call:      FnSQLCover,

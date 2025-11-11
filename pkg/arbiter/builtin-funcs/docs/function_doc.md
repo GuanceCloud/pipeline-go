@@ -1564,6 +1564,35 @@ Function examples:
 
     
 
+## `setopt` {#fn-setopt}
+
+Function prototype: `fn setopt(trigger_keepalive: int)`
+
+Function description: Set option.
+
+Function parameters:
+
+- `trigger_keepalive`: Set the trigger keepalive time (seconds).
+
+
+Function examples:
+
+* Case 0:
+
+    Script content:
+
+    ```txt
+    setopt(60 * 15)
+    ```
+
+    Standard output:
+
+    ```txt
+    
+    ```
+
+    
+
 ## `sql_cover` {#fn-sql_cover}
 
 Function prototype: `fn sql_cover(val: str) -> (str, bool)`
