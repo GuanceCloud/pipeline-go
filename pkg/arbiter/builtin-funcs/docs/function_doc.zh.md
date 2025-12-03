@@ -1707,6 +1707,43 @@
 
     
 
+## `str_split` {#fn-str_split}
+
+函数原型： `fn str_split(text: str, sep: str) -> list`
+
+函数描述： String split.
+
+函数参数：
+
+- `text`: String to be split.
+- `sep`: Separator to be used for splitting.
+
+
+函数返回值：
+
+- `list`: List of strings.
+
+
+函数示例：
+
+* 示例 0:
+
+    脚本内容：
+
+    ```txt
+    v = str_split("a,b,c", ",")
+    printf("%v", v)
+    
+    ```
+
+    标准输出：
+
+    ```txt
+    ["a","b","c"]
+    ```
+
+    
+
 ## `strfmt` {#fn-strfmt}
 
 函数原型： `fn strfmt(format: str, args: ...bool|int|float|str|list|map) -> str`
