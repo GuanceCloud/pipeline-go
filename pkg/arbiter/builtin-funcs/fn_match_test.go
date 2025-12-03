@@ -10,7 +10,17 @@ import (
 )
 
 func TestMatch(t *testing.T) {
-	cases := []ProgCase{}
+	cases := []ProgCase{
+		{
+			Name: "match",
+			Script: `
+v, ok =match("hello", "hello", 1)
+printf("%v,%v", v[0][0], v[0])
+`,
+
+			Stdout: "hello,[\"hello\"]",
+		},
+	}
 	cases = append(cases, cMatch.Progs...)
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
