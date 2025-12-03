@@ -1707,6 +1707,43 @@ Function examples:
 
     
 
+## `str_split` {#fn-str_split}
+
+Function prototype: `fn str_split(text: str, sep: str) -> list`
+
+Function description: String split.
+
+Function parameters:
+
+- `text`: String to be split.
+- `sep`: Separator to be used for splitting.
+
+
+Function returns:
+
+- `list`: List of strings.
+
+
+Function examples:
+
+* Case 0:
+
+    Script content:
+
+    ```txt
+    v = str_split("a,b,c", ",")
+    printf("%v", v)
+    
+    ```
+
+    Standard output:
+
+    ```txt
+    ["a","b","c"]
+    ```
+
+    
+
 ## `strfmt` {#fn-strfmt}
 
 Function prototype: `fn strfmt(format: str, args: ...bool|int|float|str|list|map) -> str`
