@@ -110,7 +110,11 @@ func FnMatch(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	var result []any
 	if r := re.FindAllStringSubmatch(val, int(n)); len(r) > 0 {
 		for i := range r {
-			result = append(result, r[i])
+			rLi := make([]any, len(r[i]))
+			for j := range r[i] {
+				rLi[j] = r[i][j]
+			}
+			result = append(result, rLi)
 		}
 	}
 
