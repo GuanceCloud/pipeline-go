@@ -168,6 +168,11 @@ var Funcs = map[string]*runtimev2.Fn{
 		Call:      FnStrJoin,
 		Desc:      FnStrJoinDesc,
 	},
+	FnStrSplitDesc.Name: {
+		CallCheck: FnStrSplitCheck,
+		Call:      FnStrSplit,
+		Desc:      FnStrSplitDesc,
+	},
 	FnTimeNowDesc.Name: {
 		CallCheck: FnTimeNowCheck,
 		Call:      FnTimenow,

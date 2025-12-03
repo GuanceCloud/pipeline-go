@@ -896,6 +896,20 @@ printf("%s", v)
 	},
 }
 
+var _ = AddExps(cStrSplit)
+var cStrSplit = &FuncExample{
+	FnName: FnStrSplitDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name: "strsplit",
+			Script: `v = str_split("a,b,c", ",")
+printf("%v", v)
+`,
+			Stdout: "[\"a\",\"b\",\"c\"]",
+		},
+	},
+}
+
 var _ = AddExps(cStrFmt)
 var cStrFmt = &FuncExample{
 	FnName: FnStrFmtDesc.Name,
