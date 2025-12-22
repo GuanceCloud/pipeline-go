@@ -39,7 +39,7 @@ var (
 )
 
 type DQL interface {
-	Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any) (map[string]any, error)
+	Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, uuids ...string) (map[string]any, error)
 	TimeRange() []int64
 }
 
@@ -67,7 +67,7 @@ func (cli *DQLCliKodo) TimeRange() []int64 {
 	return nil
 }
 
-func (cli *DQLCliKodo) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any) (map[string]any, error) {
+func (cli *DQLCliKodo) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, uuids ...string) (map[string]any, error) {
 	url := cli.URL
 	if url == "" {
 		return nil, fmt.Errorf("dql query url is empty")
@@ -94,6 +94,10 @@ func (cli *DQLCliKodo) Query(pos token.LnColPos, q, qTyp string, limit, offset, 
 		query["time_range"] = timeRange
 	} else if len(cli.Timerange) == 2 {
 		query["time_range"] = cli.Timerange
+	}
+
+	if len(uuids) > 0 {
+		query["workspace_uuids"] = uuids
 	}
 
 	b, err := json.Marshal(map[string]any{

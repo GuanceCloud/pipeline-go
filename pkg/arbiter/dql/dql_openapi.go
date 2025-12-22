@@ -39,7 +39,7 @@ func NewDQLOpenAPI(endpoint, path, key string, timeRange []int64) *DQLCliOpenAPI
 	}
 }
 
-func (cli *DQLCliOpenAPI) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any) (map[string]any, error) {
+func (cli *DQLCliOpenAPI) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, uuids ...string) (map[string]any, error) {
 	url := cli.URL
 	if url == "" {
 		return nil, fmt.Errorf("dql query url is empty")
@@ -61,6 +61,10 @@ func (cli *DQLCliOpenAPI) Query(pos token.LnColPos, q, qTyp string, limit, offse
 		query["timeRange"] = timeRange
 	} else if len(cli.Timerange) == 2 {
 		query["timeRange"] = cli.Timerange
+	}
+
+	if len(uuids) > 0 {
+		query["workspace_uuids"] = uuids
 	}
 
 	b, err := json.Marshal(map[string]any{

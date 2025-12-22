@@ -352,7 +352,7 @@ Function examples:
 
 ## `dql` {#fn-dql}
 
-Function prototype: `fn dql(query: str, qtype: str = "dql", limit: int = 10000, offset: int = 0, slimit: int = 0, time_range: list = []) -> map`
+Function prototype: `fn dql(query: str, qtype: str = "dql", limit: int = 10000, offset: int = 0, slimit: int = 0, time_range: list = [], workspace_uuids: list = []) -> map`
 
 Function description: Query data using dql or promql.
 
@@ -364,6 +364,7 @@ Function parameters:
 - `offset`: Query offset.
 - `slimit`: Query slimit.
 - `time_range`: Query timestamp range, the default value can be modified externally by the script caller.
+- `workspace_uuids`: Workspace UUIDs to query data from.
 
 
 Function returns:
