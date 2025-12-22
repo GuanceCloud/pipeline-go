@@ -16,10 +16,15 @@ import (
 func TestDocs(t *testing.T) {
 	d, err := GenerateDocs("zh")
 	assert.NoError(t, err)
-	_ = os.WriteFile("docs/function_doc.zh.md", []byte(d), 0644)
+
+	err = os.WriteFile("docs/function_doc.zh.md", []byte(d), 0644)
+	assert.NoError(t, err)
+
 	d, err = GenerateDocs("en")
 	assert.NoError(t, err)
-	_ = os.WriteFile("docs/function_doc.md", []byte(d), 0644)
+
+	err = os.WriteFile("docs/function_doc.md", []byte(d), 0644)
+	assert.NoError(t, err)
 }
 
 func TestDocsJSON(t *testing.T) {
