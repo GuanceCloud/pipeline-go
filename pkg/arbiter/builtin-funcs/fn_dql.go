@@ -61,12 +61,12 @@ var FnDQLDesc = runtimev2.FnDesc{
 			Typs: []ast.DType{ast.List},
 		},
 		{
-			Name: "workspace_uuids",
-			Desc: "Workspace UUIDs to query data from.",
+			Name: "workspace_uuid",
+			Desc: "Workspace UUID to query data from.",
 			Val: func() any {
-				return []any{}
+				return ""
 			},
-			Typs: []ast.DType{ast.List},
+			Typs: []ast.DType{ast.String},
 		},
 	},
 	Returns: []*runtimev2.Param{
@@ -122,22 +122,13 @@ func FnDQL(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 		return err
 	}
 
-	uuidsAny, err := runtimev2.GetParamList(ctx, expr, FnDQLDesc.Params, 6)
+	uuid, err := runtimev2.GetParamString(ctx, expr, FnDQLDesc.Params, 6)
 	if err != nil {
 		return err
 	}
 
-	uuids := make([]string, 0, len(uuidsAny))
-	for _, u := range uuidsAny {
-		if us, ok := u.(string); ok {
-			uuids = append(uuids, us)
-		} else {
-			return runtimev2.NewRunError(ctx, "workspace_uuids param item type is unexpected, should be string", expr.NamePos)
-		}
-	}
-
 	if r, err := dqlCli.Query(expr.NamePos, query, qtype, limit,
-		offset, slimit, timeRange, uuids...); err != nil {
+		offset, slimit, timeRange, uuid); err != nil {
 		return runtimev2.NewRunError(ctx, err.Error(), expr.NamePos)
 	} else {
 		ctx.Regs.ReturnAppend(
