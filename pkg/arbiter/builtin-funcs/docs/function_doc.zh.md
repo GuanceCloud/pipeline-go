@@ -352,7 +352,7 @@
 
 ## `dql` {#fn-dql}
 
-函数原型： `fn dql(query: str, qtype: str = "dql", limit: int = 10000, offset: int = 0, slimit: int = 0, time_range: list = [], workspace_uuids: list = []) -> map`
+函数原型： `fn dql(query: str, qtype: str = "dql", limit: int = 10000, offset: int = 0, slimit: int = 0, time_range: list = [], workspace_uuid: str = "") -> map`
 
 函数描述： Query data using dql or promql.
 
@@ -364,7 +364,7 @@
 - `offset`: Query offset.
 - `slimit`: Query slimit.
 - `time_range`: Query timestamp range, the default value can be modified externally by the script caller.
-- `workspace_uuids`: Workspace UUIDs to query data from.
+- `workspace_uuid`: Workspace UUID to query data from.
 
 
 函数返回值：
