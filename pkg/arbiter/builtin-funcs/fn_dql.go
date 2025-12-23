@@ -127,8 +127,13 @@ func FnDQL(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 		return err
 	}
 
+	var uuids []string
+	if uuid != "" {
+		uuids = append(uuids, uuid)
+	}
+
 	if r, err := dqlCli.Query(expr.NamePos, query, qtype, limit,
-		offset, slimit, timeRange, uuid); err != nil {
+		offset, slimit, timeRange, uuids...); err != nil {
 		return runtimev2.NewRunError(ctx, err.Error(), expr.NamePos)
 	} else {
 		ctx.Regs.ReturnAppend(
