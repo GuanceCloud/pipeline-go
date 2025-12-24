@@ -42,7 +42,7 @@ var FnTriggerDesc = runtimev2.FnDesc{
 		},
 		{
 			Name: "check_workspace_uuid",
-			Desc: "UUID of the workspace related to the detection result",
+			Desc: "UUID of the workspace related to the detection result.",
 			Typs: []ast.DType{ast.String},
 			Val: func() any {
 				return ""
