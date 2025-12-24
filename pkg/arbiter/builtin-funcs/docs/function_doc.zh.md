@@ -1819,7 +1819,7 @@
 
 ## `trigger` {#fn-trigger}
 
-函数原型： `fn trigger(result: int|float|bool|str, status: str = "", dimension_tags: map = {}, related_data: map = {})`
+函数原型： `fn trigger(result: int|float|bool|str, status: str = "", dimension_tags: map = {}, related_data: map = {}, check_workspace_uuid: str = "")`
 
 函数描述： Trigger a security event.
 
@@ -1829,6 +1829,7 @@
 - `status`: Event status. One of: (`critical`, `high`, `medium`, `low`, `info`).
 - `dimension_tags`: Dimension tags.
 - `related_data`: Related data.
+- `check_workspace_uuid`: UUID of the workspace related to the detection result
 
 
 函数示例：
@@ -1867,7 +1868,8 @@
             "related_data": {
                 "a": "1",
                 "a1": 2.1
-            }
+            },
+            "check_workspace_uuid": ""
         },
         {
             "result": 2,
@@ -1878,7 +1880,8 @@
             },
             "related_data": {
                 "b": {}
-            }
+            },
+            "check_workspace_uuid": ""
         },
         {
             "result": false,
@@ -1887,7 +1890,8 @@
             "related_data": {
                 "a": 1,
                 "b": 2
-            }
+            },
+            "check_workspace_uuid": ""
         },
         {
             "result": "hello",
@@ -1898,7 +1902,8 @@
                 "b": [
                     1
                 ]
-            }
+            },
+            "check_workspace_uuid": ""
         }
     ]
     
