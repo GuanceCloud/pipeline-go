@@ -1819,7 +1819,7 @@ Function examples:
 
 ## `trigger` {#fn-trigger}
 
-Function prototype: `fn trigger(result: int|float|bool|str, status: str = "", dimension_tags: map = {}, related_data: map = {})`
+Function prototype: `fn trigger(result: int|float|bool|str, status: str = "", dimension_tags: map = {}, related_data: map = {}, check_workspace_uuid: str = "")`
 
 Function description: Trigger a security event.
 
@@ -1829,6 +1829,7 @@ Function parameters:
 - `status`: Event status. One of: (`critical`, `high`, `medium`, `low`, `info`).
 - `dimension_tags`: Dimension tags.
 - `related_data`: Related data.
+- `check_workspace_uuid`: UUID of the workspace related to the detection result
 
 
 Function examples:
@@ -1867,7 +1868,8 @@ Function examples:
             "related_data": {
                 "a": "1",
                 "a1": 2.1
-            }
+            },
+            "check_workspace_uuid": ""
         },
         {
             "result": 2,
@@ -1878,7 +1880,8 @@ Function examples:
             },
             "related_data": {
                 "b": {}
-            }
+            },
+            "check_workspace_uuid": ""
         },
         {
             "result": false,
@@ -1887,7 +1890,8 @@ Function examples:
             "related_data": {
                 "a": 1,
                 "b": 2
-            }
+            },
+            "check_workspace_uuid": ""
         },
         {
             "result": "hello",
@@ -1898,7 +1902,8 @@ Function examples:
                 "b": [
                     1
                 ]
-            }
+            },
+            "check_workspace_uuid": ""
         }
     ]
     

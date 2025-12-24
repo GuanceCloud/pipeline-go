@@ -40,6 +40,14 @@ var FnTriggerDesc = runtimev2.FnDesc{
 				return map[string]any{}
 			},
 		},
+		{
+			Name: "check_workspace_uuid",
+			Desc: "UUID of the workspace related to the detection result",
+			Typs: []ast.DType{ast.String},
+			Val: func() any {
+				return ""
+			},
+		},
 	},
 }
 
@@ -77,6 +85,10 @@ func FnTrigger(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 	if err != nil {
 		return err
 	}
-	tr.Trigger(result, status, dimTags, relatedData)
+	checkWorkspaceUUID, err := runtimev2.GetParamString(ctx, expr, FnTriggerDesc.Params, 4)
+	if err != nil {
+		return err
+	}
+	tr.Trigger(result, status, dimTags, relatedData, checkWorkspaceUUID)
 	return nil
 }

@@ -6,13 +6,12 @@ require (
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.47.1
 	github.com/GuanceCloud/cliutils v1.1.22-0.20250801034230-d6aabd6c5a53
 	github.com/GuanceCloud/grok v1.1.5-0.20250416104424-34917bd63e69
-	github.com/GuanceCloud/platypus v0.3.3
+	github.com/GuanceCloud/platypus v0.3.4
 	github.com/antchfx/xmlquery v1.3.18
 	github.com/araddon/dateparse v0.0.0-20201001162425-8aadafed4dc4
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/dgraph-io/ristretto v0.2.0
 	github.com/goccy/go-json v0.10.3
-	github.com/hashicorp/go-retryablehttp v0.7.4
 	github.com/influxdata/influxdb1-client v0.0.0-20220302092344-a9ab5670611c
 	github.com/ip2location/ip2location-go v8.3.0+incompatible
 	github.com/ipipdotnet/ipdb-go v1.3.3
@@ -44,7 +43,6 @@ require (
 	github.com/chenzhuoyu/base64x v0.0.0-20221115062448-fe3a3abad311 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/fatih/color v1.15.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.9.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
@@ -54,14 +52,11 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
-	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.19 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
