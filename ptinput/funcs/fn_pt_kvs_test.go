@@ -257,3 +257,50 @@ func TestPtKvsSet(t *testing.T) {
 		})
 	}
 }
+
+func TestPtKvsGetComposite(t *testing.T) {
+	funcs := []*Function{
+		FnPtKvsGet,
+		FnPtKvsSet,
+	}
+
+	cases := []struct {
+		name   string
+		kvs    point.KVs
+		pl     string
+		key    string
+		expect any
+	}{
+		{
+			name: "list",
+			kvs: point.KVs{
+				point.NewKV("key1", []int{1, 2}),
+			},
+			pl: `
+			pt_kvs_set("key2", pt_kvs_get("key1"))
+			`,
+			key:    "key2",
+			expect: `[1,2]`,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			script, err := parseScipt(tc.pl, funcs)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			raw := point.NewPoint("test", tc.kvs, point.DefaultLoggingOptions()...)
+			pt := ptinput.PtWrap(point.Logging, raw)
+			errR := script.Run(pt, nil)
+			if errR != nil {
+				t.Fatal(errR.Error())
+			}
+
+			v, _, err := pt.Get(tc.key)
+			assert.NoError(t, err)
+			assert.Equal(t, tc.expect, v)
+		})
+	}
+}

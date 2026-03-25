@@ -115,3 +115,22 @@ func TestPt(t *testing.T) {
 		t.Fatal("name != \"t2\"")
 	}
 }
+
+func TestPlPointGetRawComposite(t *testing.T) {
+	pt := NewPlPoint(point.Logging, "t", nil, map[string]any{
+		"arr": []any{int64(1), "x"},
+	}, time.Now())
+
+	v, dt, err := pt.GetRaw("arr")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if dt != ast.List {
+		t.Fatalf("unexpected dtype: %s", dt.String())
+	}
+
+	if got, ok := v.([]any); !ok || len(got) != 2 || got[0] != int64(1) || got[1] != "x" {
+		t.Fatalf("unexpected value: %#v", v)
+	}
+}

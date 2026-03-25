@@ -45,6 +45,14 @@ func TestLen(t *testing.T) {
 			expected: int64(4),
 			outkey:   "abc",
 		},
+		{
+			name: "len point array via pt_kvs_get",
+			pl: `abc = pt_kvs_get("nums")
+			add_key(abc, len(abc))`,
+			in:       `test`,
+			expected: int64(3),
+			outkey:   "abc",
+		},
 	}
 
 	for idx, tc := range cases {
@@ -58,8 +66,19 @@ func TestLen(t *testing.T) {
 				}
 				return
 			}
-			pt := ptinput.NewPlPt(
-				point.Logging, "test", nil, map[string]any{"message": tc.in}, time.Now())
+			var pt ptinput.PlInputPt
+			if tc.name == "len point array via pt_kvs_get" {
+				raw := point.NewPoint("test",
+					point.KVs{
+						point.NewKV("message", tc.in),
+						point.NewKV("nums", []int{1, 2, 3}),
+					},
+					point.DefaultLoggingOptions()...)
+				pt = ptinput.PtWrap(point.Logging, raw)
+			} else {
+				pt = ptinput.NewPlPt(
+					point.Logging, "test", nil, map[string]any{"message": tc.in}, time.Now())
+			}
 			errR := runScript(runner, pt)
 
 			if errR != nil {
