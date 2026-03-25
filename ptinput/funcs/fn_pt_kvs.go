@@ -164,7 +164,7 @@ var (
 )
 
 func ptKvsGet(ctx *runtime.Task, funcExpr *ast.CallExpr, vals ...any) *errchain.PlError {
-	if val, dtype, err := getPtKey(ctx.InData(), vals[0].(string)); err != nil {
+	if val, dtype, err := getPtKeyRaw(ctx.InData(), vals[0].(string)); err != nil {
 		ctx.Regs.ReturnAppend(nil, ast.Nil)
 	} else {
 		ctx.Regs.ReturnAppend(val, dtype)

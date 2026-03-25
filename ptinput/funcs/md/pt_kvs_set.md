@@ -4,6 +4,12 @@
 
 函数说明：往 Point 中添加 key 或修改 Point 中 key 的值
 
+说明：
+
+- 设置 field 时，`list` 会优先保留为 Point 原生数组字段
+- 设置 field 时，`map` 会优先保留为 Point 原生字典字段
+- 设置 tag 时，值会转换为字符串
+
 函数参数：
 
 - `name`: 待添加或修改的字段或标签的名
@@ -21,4 +27,8 @@ kvs = {
 for k in kvs {
     pt_kvs_set(k, kvs[k])
 }
+
+nums = pt_kvs_get("nums")
+nums = append(nums, 4)
+pt_kvs_set("nums", nums)
 ```

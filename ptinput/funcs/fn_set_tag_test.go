@@ -85,6 +85,28 @@ func TestSetTag(t *testing.T) {
 			expect: "3",
 			fail:   false,
 		},
+		{
+			name: "set_tag list stringify",
+			in:   `test`,
+			pl: `
+			a = [1, 2]
+			set_tag("arr_tag", a)
+	`,
+			outtag: "arr_tag",
+			expect: "[1,2]",
+			fail:   false,
+		},
+		{
+			name: "set_tag map stringify",
+			in:   `test`,
+			pl: `
+			a = {"a": 1, "b": "x"}
+			set_tag("obj_tag", a)
+	`,
+			outtag: "obj_tag",
+			expect: `{"a":1,"b":"x"}`,
+			fail:   false,
+		},
 	}
 
 	for idx, tc := range cases {

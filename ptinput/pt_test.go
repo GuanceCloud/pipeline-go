@@ -174,6 +174,58 @@ func TestPlPt2(t *testing.T) {
 	}
 }
 
+func TestPtGetRawComposite(t *testing.T) {
+	raw := point.NewPoint("t",
+		point.KVs{
+			point.NewKV("arr", []int{1, 2}),
+		},
+		point.DefaultLoggingOptions()...)
+	pt := PtWrap(point.Logging, raw)
+
+	v, dt, err := pt.GetRaw("arr")
+	assert.NoError(t, err)
+	assert.Equal(t, ast.List, dt)
+	assert.Equal(t, []any{int64(1), int64(2)}, v)
+
+	v, dt, err = pt.Get("arr")
+	assert.NoError(t, err)
+	assert.Equal(t, ast.String, dt)
+	assert.Equal(t, `[1,2]`, v)
+}
+
+func TestPtSetPreserveComposite(t *testing.T) {
+	pt := NewPlPt(point.Logging, "t", nil, nil, time.Now())
+
+	ok := pt.Set("arr", []any{int64(1), int64(2)}, ast.List)
+	assert.True(t, ok)
+
+	v, dt, err := pt.GetRaw("arr")
+	assert.NoError(t, err)
+	assert.Equal(t, ast.List, dt)
+	assert.Equal(t, []any{int64(1), int64(2)}, v)
+
+	raw := pt.Point().KVs().Get("arr")
+	assert.NotNil(t, raw)
+	assert.Equal(t, []int64{1, 2}, raw.Raw())
+}
+
+func TestPtSetPreserveMap(t *testing.T) {
+	pt := NewPlPt(point.Logging, "t", nil, nil, time.Now())
+
+	ok := pt.Set("obj", map[string]any{"a": int64(1), "b": "x"}, ast.Map)
+	assert.True(t, ok)
+
+	v, dt, err := pt.GetRaw("obj")
+	assert.NoError(t, err)
+	assert.Equal(t, ast.Map, dt)
+	assert.Equal(t, map[string]any{"a": int64(1), "b": "x"}, v)
+
+	v, dt, err = pt.Get("obj")
+	assert.NoError(t, err)
+	assert.Equal(t, ast.String, dt)
+	assert.Equal(t, `{"a":1,"b":"x"}`, v)
+}
+
 var lp = []byte(`gin app="deployment-forethought-kodo-kodo",client_ip="172.1***03",cluster_name_k8s="k8s-daily",container_id="dcbacc667c1534127d4f4c531fc26f613f4e6f822e646dee4e4bdbc5e87920c4",container_name="kodo",deployment="kodo",filepath="/rootfs/var/log/pods/forethought-kodo_kodo-7dc8b5c448-rmcpb_bd5159c7-df57-4346-987d-fc6883aeabea/kodo/0.log",test_site="daily",host="cluster_a_cn-hangzhou.172.1***.102",host_ip="172.1***.102",image="registry.****.com/ko**:testing-202*****",log_read_lines=289892,message="[GIN] 2024/11/15 - 10:56:07 | 403 | 759.859µs |  172.16.200.203 | POST    \"/v1/write/metric?token=****************842cda605c6cb87e3a7b8\"",message_length=137,namespace="forethought-kodo",pod-template-hash="7dc8b5c448",pod_ip="10.113.0.204",pod_name="kodo-7dc8b5c448-rmcpb",real_host="hz--daily-002",region="cn-hangzhou",service="kodo",status="warning",time_ns=1731639367526632400,time_us=1731639367526632,timestamp="2024/11/15 - 10:56:07",zone_id="cn-hangzhou-j" 1731639367526000000`)
 
 func BenchmarkPts(b *testing.B) {

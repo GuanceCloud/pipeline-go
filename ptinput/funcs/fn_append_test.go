@@ -77,6 +77,15 @@ func TestAppend(t *testing.T) {
 			expected: "[1,2]",
 			outkey:   "arr",
 		},
+		{
+			name: "append on point array via pt_kvs_get",
+			pl: `a = pt_kvs_get("nums")
+			b = append(a, 3)
+			pt_kvs_set("arr", b)`,
+			in:       `test`,
+			expected: "[1,2,3]",
+			outkey:   "arr",
+		},
 	}
 
 	for idx, tc := range cases {
@@ -90,8 +99,19 @@ func TestAppend(t *testing.T) {
 				}
 				return
 			}
-			pt := ptinput.NewPlPt(
-				point.Logging, "test", nil, map[string]any{"message": tc.in}, time.Now())
+			var pt ptinput.PlInputPt
+			if tc.name == "append on point array via pt_kvs_get" {
+				raw := point.NewPoint("test",
+					point.KVs{
+						point.NewKV("message", tc.in),
+						point.NewKV("nums", []int{1, 2}),
+					},
+					point.DefaultLoggingOptions()...)
+				pt = ptinput.PtWrap(point.Logging, raw)
+			} else {
+				pt = ptinput.NewPlPt(
+					point.Logging, "test", nil, map[string]any{"message": tc.in}, time.Now())
+			}
 			errR := runScript(runner, pt)
 			if errR != nil {
 				t.Fatal(*errR)

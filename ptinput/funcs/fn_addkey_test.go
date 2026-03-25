@@ -99,6 +99,24 @@ add_key(add_new_key, "shanghai")
 			expect: nil,
 			fail:   false,
 		},
+		{
+			name: "value type: list compatibility",
+			in:   `test`,
+			pl: `
+		add_key(add_new_key, [1, 2])
+		`,
+			expect: "[1,2]",
+			fail:   false,
+		},
+		{
+			name: "value type: map compatibility",
+			in:   `test`,
+			pl: `
+		add_key(add_new_key, {"a": 1, "b": "x"})
+		`,
+			expect: `{"a":1,"b":"x"}`,
+			fail:   false,
+		},
 	}
 
 	for idx, tc := range cases {

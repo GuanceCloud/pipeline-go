@@ -1829,7 +1829,7 @@ Function parameters:
 - `status`: Event status. One of: (`critical`, `high`, `medium`, `low`, `info`).
 - `dimension_tags`: Dimension tags.
 - `related_data`: Related data.
-- `check_workspace_uuid`: UUID of the workspace related to the detection result
+- `check_workspace_uuid`: UUID of the workspace related to the detection result.
 
 
 Function examples:
