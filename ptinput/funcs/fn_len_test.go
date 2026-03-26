@@ -47,7 +47,7 @@ func TestLen(t *testing.T) {
 		},
 		{
 			name: "len point array via pt_kvs_get",
-			pl: `abc = pt_kvs_get("nums")
+			pl: `abc = pt_kvs_get("nums", true)
 			add_key(abc, len(abc))`,
 			in:       `test`,
 			expected: int64(3),

@@ -6,6 +6,8 @@ github.com/DataDog/datadog-go/v5 v5.1.1 h1:JLZ6s2K1pG2h9GkvEvMdEGqMDyVLEAccdX5Tl
 github.com/DataDog/datadog-go/v5 v5.1.1/go.mod h1:KhiYb2Badlv9/rofz+OznKoEF5XKTonWyhx5K83AP8E=
 github.com/GuanceCloud/cliutils v1.1.22-0.20250801034230-d6aabd6c5a53 h1:JDxdcDaMR2Zs43rmmH8lzlAv4USrIVI5R7ZgxTJNzB4=
 github.com/GuanceCloud/cliutils v1.1.22-0.20250801034230-d6aabd6c5a53/go.mod h1:A9IifVTE4+h6rK7rgvzXoMVwe+wl75UPuM+sqYhjepQ=
+github.com/GuanceCloud/cliutils v1.1.22-0.20260326081525-39733a0223bf h1:jv3sbJVjOB/YYeqMUg7tsBBL2zTlovGLLtIMnzar+lo=
+github.com/GuanceCloud/cliutils v1.1.22-0.20260326081525-39733a0223bf/go.mod h1:srJuHkdED/YhjaIayQUJhmPBkmmVPzUX0hsbdIhYd5g=
 github.com/GuanceCloud/grok v1.1.5-0.20250416104424-34917bd63e69 h1:LRwIH9nsCsVXTNVe6G/27n14+YWA9+Xg5DVWFNtMHcc=
 github.com/GuanceCloud/grok v1.1.5-0.20250416104424-34917bd63e69/go.mod h1:AHkJZYf7Qbo1FTZT6htdyScpICpgnkQ5+Hc0EmA88vM=
 github.com/GuanceCloud/influxdb1-client v0.1.8 h1:7XNICWcW+NxAHFkzQ8mkOCKA/8U2WNH5m+Hm9g0vz4k=
@@ -198,6 +200,8 @@ go.uber.org/multierr v1.6.0 h1:y6IPFStTAIT5Ytl7/XYmHvzXQ7S3g/IeZW9hyZ5thw4=
 go.uber.org/multierr v1.6.0/go.mod h1:cdWPpRnG4AhwMwsgIHip0KRBQjJy5kYEpYjJxpXp9iU=
 go.uber.org/zap v1.23.0 h1:OjGQ5KQDEUawVHxNwQgPpiypGHOxo2mNZsOqTak4fFY=
 go.uber.org/zap v1.23.0/go.mod h1:D+nX8jyLsMHMYrln8A0rJjFt/T/9/bGgIhAqxv5URuY=
+go.uber.org/zap v1.24.0 h1:FiJd5l1UOLj0wCgbSE0rwwXHzEdAZS6hiiSnxJN/D60=
+go.uber.org/zap v1.24.0/go.mod h1:2kMP+WWQ8aoFoedH3T2sq6iJ2yDWpHbP0f6MQbS9Gkg=
 golang.org/x/arch v0.0.0-20210923205945-b76863e36670 h1:18EFjUmQOcUvxNYSkA6jO9VAiXCnxFY6NyDX0bHDmkU=
 golang.org/x/arch v0.0.0-20210923205945-b76863e36670/go.mod h1:5om86z9Hs0C8fWVUuoMHwpExlXzs5Tkyp9hOrfG7pp8=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=

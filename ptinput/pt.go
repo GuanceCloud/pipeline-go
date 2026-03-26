@@ -299,7 +299,7 @@ func getVal(kv *point.Field, allowComposite bool) (any, ast.DType) {
 		return val, dt
 	}
 
-	return nil, ast.Nil
+	return val, dt
 }
 
 func normalVal(v any, conv2Str bool, allowComposite bool) (any, ast.DType) {

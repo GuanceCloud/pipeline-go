@@ -136,3 +136,15 @@ func TestManger(t *testing.T) {
 	})
 
 }
+
+func TestScriptNameLLM(t *testing.T) {
+	name, ok := ScriptName(nil, point.LLM, point.NewPoint("openai", point.NewKVs(map[string]interface{}{
+		"app_id": "app_123",
+	})), nil)
+	assert.True(t, ok)
+	assert.Equal(t, "openai_app_123.p", name)
+
+	name, ok = ScriptName(nil, point.LLM, point.NewPoint("openai", point.NewKVs(nil)), nil)
+	assert.False(t, ok)
+	assert.Empty(t, name)
+}

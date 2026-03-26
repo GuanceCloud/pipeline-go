@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.47.1
-	github.com/GuanceCloud/cliutils v1.1.22-0.20250801034230-d6aabd6c5a53
+	github.com/GuanceCloud/cliutils v1.1.22-0.20260326081525-39733a0223bf
 	github.com/GuanceCloud/grok v1.1.5-0.20250416104424-34917bd63e69
 	github.com/GuanceCloud/platypus v0.3.4
 	github.com/antchfx/xmlquery v1.3.18
@@ -80,7 +80,7 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/goleak v1.2.1 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	go.uber.org/zap v1.23.0 // indirect
+	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63 // indirect
