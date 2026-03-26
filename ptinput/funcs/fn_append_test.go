@@ -79,9 +79,9 @@ func TestAppend(t *testing.T) {
 		},
 		{
 			name: "append on point array via pt_kvs_get",
-			pl: `a = pt_kvs_get("nums")
+			pl: `a = pt_kvs_get("nums", true)
 			b = append(a, 3)
-			pt_kvs_set("arr", b)`,
+			pt_kvs_set("arr", b, false, true)`,
 			in:       `test`,
 			expected: "[1,2,3]",
 			outkey:   "arr",

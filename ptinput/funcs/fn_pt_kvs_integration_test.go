@@ -12,7 +12,7 @@ import (
 
 func TestPtKvsGetInOperator(t *testing.T) {
 	pl := `
-	arr = pt_kvs_get("nums")
+	arr = pt_kvs_get("nums", true)
 	if 2 in arr {
 		pt_kvs_set("hit", true)
 	}
@@ -43,10 +43,10 @@ func TestPtKvsGetInOperator(t *testing.T) {
 
 func TestPtKvsGetAppendLenChain(t *testing.T) {
 	pl := `
-	arr = pt_kvs_get("nums")
+	arr = pt_kvs_get("nums", true)
 	arr = append(arr, 4)
 	pt_kvs_set("size", len(arr))
-	pt_kvs_set("arr", arr)
+	pt_kvs_set("arr", arr, false, true)
 	`
 
 	runner, err := NewTestingRunner(pl)
@@ -101,8 +101,8 @@ func TestPtKvsSetMap(t *testing.T) {
 
 	v, dt, err := pt.GetRaw("obj")
 	assert.NoError(t, err)
-	assert.Equal(t, ast.Map, dt)
-	assert.Equal(t, map[string]any{"a": int64(1), "b": "x"}, v)
+	assert.Equal(t, ast.String, dt)
+	assert.Equal(t, `{"a":1,"b":"x"}`, v)
 
 	v, dt, err = pt.Get("obj")
 	assert.NoError(t, err)
@@ -130,5 +130,66 @@ func TestPtKvsGetMapCompatibility(t *testing.T) {
 
 	v, _, err := pt.Get("obj_type")
 	assert.NoError(t, err)
+	assert.Equal(t, "str", v)
+}
+
+func TestPtKvsGetRawOption(t *testing.T) {
+	pl := `
+	pt_kvs_set("obj", {"a": 1}, false, true)
+	pt_kvs_set("raw_type", value_type(pt_kvs_get("obj", true)))
+	pt_kvs_set("plain_type", value_type(pt_kvs_get("obj", false)))
+	pt_kvs_set("plain_value", pt_kvs_get("obj", false))
+	`
+
+	runner, err := NewTestingRunner(pl)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pt := ptinput.NewPlPt(point.Logging, "test", nil, map[string]any{"message": "test"}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	v, _, err := pt.Get("raw_type")
+	assert.NoError(t, err)
 	assert.Equal(t, "map", v)
+
+	v, _, err = pt.Get("plain_type")
+	assert.NoError(t, err)
+	assert.Equal(t, "str", v)
+
+	v, _, err = pt.Get("plain_value")
+	assert.NoError(t, err)
+	assert.Equal(t, `{"a":1}`, v)
+}
+
+func TestPtKvsSetRawOption(t *testing.T) {
+	pl := `
+	obj = {"a": 1}
+	pt_kvs_set("obj_raw", obj, false, true)
+	pt_kvs_set("obj_str", obj, false, false)
+	`
+
+	runner, err := NewTestingRunner(pl)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pt := ptinput.NewPlPt(point.Logging, "test", nil, map[string]any{"message": "test"}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	v, dt, err := pt.GetRaw("obj_raw")
+	assert.NoError(t, err)
+	assert.Equal(t, ast.Map, dt)
+	assert.Equal(t, map[string]any{"a": int64(1)}, v)
+
+	v, dt, err = pt.GetRaw("obj_str")
+	assert.NoError(t, err)
+	assert.Equal(t, ast.String, dt)
+	assert.Equal(t, `{"a":1}`, v)
 }
