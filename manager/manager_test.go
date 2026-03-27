@@ -142,7 +142,15 @@ func TestScriptNameLLM(t *testing.T) {
 		"app_id": "app_123",
 	})), nil)
 	assert.True(t, ok)
-	assert.Equal(t, "openai_app_123.p", name)
+	assert.Equal(t, "app_123_openai.p", name)
+
+	name, ok = ScriptName(nil, point.LLM, point.NewPoint("openai", point.NewKVs(map[string]interface{}{
+		"app_id": "app_123",
+	})), map[string]string{
+		"app_123_openai": "llm_custom.p",
+	})
+	assert.True(t, ok)
+	assert.Equal(t, "llm_custom.p", name)
 
 	name, ok = ScriptName(nil, point.LLM, point.NewPoint("openai", point.NewKVs(nil)), nil)
 	assert.False(t, ok)
