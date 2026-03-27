@@ -22,7 +22,7 @@ func _rumSName(pt *point.Point) string {
 func _llmSName(pt *point.Point) string {
 	if id := pt.Get("app_id"); id != nil {
 		if appID, ok := id.(string); ok {
-			return pt.Name() + "_" + appID
+			return appID + "_" + pt.Name()
 		}
 	}
 	return ""
