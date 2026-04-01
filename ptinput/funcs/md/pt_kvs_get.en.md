@@ -9,7 +9,7 @@ Notes:
 - By default, values are returned in plain form; list/map values are converted to strings
 - With `raw=true`, array and map values are preserved as `list` / `map`, so they can be used by script operations such as `append()`, `len()`, and `in`
 - Tags are always returned as strings
-- If the value was already stored as a JSON string earlier in the pipeline, the returned value is still a string
+- If the value was already stored as a JSON string earlier in the script, the returned value is still a string
 
 Function parameters:
 
