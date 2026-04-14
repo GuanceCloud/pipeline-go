@@ -54,13 +54,63 @@
 
 1. 先查精确 map
 2. 如果 miss，查当前快照上的 wildcard result cache
-3. 如果 cache miss，再走：
+3. 如果 cache miss，再从 wildcard 索引里收集候选规则：
+   - generic fallback
+   - literal-anchor index
    - prefix trie
    - suffix trie
-   - literal-anchor index
-   - generic fallback
 4. 对候选规则做最终 wildcard match
-5. 将 wildcard 结果写入当前快照缓存
+5. 多条 wildcard 同时命中时，按统一优先级选最优规则
+6. 将 wildcard 结果写入当前快照缓存
+
+这里要特别注意两点：
+
+- 候选规则的收集顺序不代表最终命中顺序
+- 最终返回结果由统一的“更具体优先”规则决定，因此不是随机的，也不是按配置顺序决定的
+
+### 多条通配同时命中时的优先级
+
+当一个 `source` 同时命中多条 wildcard pattern 时，最终选择遵循固定优先级：
+
+1. 字面量字符更多优先
+2. `*` 更少优先
+3. 模式更长优先
+4. pattern 字典序兜底
+
+这套规则的目标是优先选择“约束更强、更具体”的 pattern，而不是谁先被扫描到就返回谁。
+
+例如，有下面几条 relation：
+
+```text
+svc-*        -> p1
+svc-??       -> p2
+svc-prod-*   -> p3
+*prod*       -> p4
+```
+
+查询 `source = "svc-prod-ab"` 时：
+
+- `svc-*` 命中
+- `svc-prod-*` 命中
+- `*prod*` 命中
+- `svc-??` 不命中
+
+最终返回 `p3`，因为 `svc-prod-*` 的字面量部分更多，模式更具体。
+
+再例如：
+
+```text
+ab*cd   -> p1
+ab?cd   -> p2
+```
+
+查询 `source = "abxcd"` 时，两条都命中，但最终返回 `p2`。
+
+原因是：
+
+- 两条规则的字面量字符数相同
+- `ab?cd` 的 `*` 更少
+- `?` 比 `*` 更严格，因此优先级更高
 
 ## 高并发设计
 
