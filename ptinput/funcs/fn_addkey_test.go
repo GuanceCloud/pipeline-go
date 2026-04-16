@@ -145,3 +145,39 @@ add_key(add_new_key, "shanghai")
 		})
 	}
 }
+
+func TestAddkeyMessageMapCompatibility(t *testing.T) {
+	pl := `
+result_msg = {}
+all_keys = pt_kvs_keys()
+for k in all_keys {
+	if k != "message" {
+		result_msg[k] = pt_kvs_get(k)
+	}
+}
+add_key("message", result_msg)
+`
+
+	runner, err := NewTestingRunner(pl)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pt := ptinput.NewPlPt(point.Logging, "test", nil, map[string]any{
+		"message": "test",
+		"a":       "x",
+		"b":       int64(1),
+	}, time.Now())
+
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	v, _, err := pt.Get("message")
+	assert.NoError(t, err)
+	assert.Equal(t, `{"a":"x","b":1,"status":"info"}`, v)
+
+	assert.Equal(t, `{"a":"x","b":1,"status":"info"}`, pt.Fields()["message"])
+	assert.Equal(t, `{"a":"x","b":1,"status":"info"}`, pt.Point().KVs().InfluxFields()["message"])
+}
