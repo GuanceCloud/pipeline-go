@@ -18,6 +18,7 @@ func TestAddkey(t *testing.T) {
 	cases := []struct {
 		name, pl, in string
 		expect       interface{}
+		checkExport  bool
 		fail         bool
 	}{
 		{
@@ -105,8 +106,9 @@ add_key(add_new_key, "shanghai")
 			pl: `
 		add_key(add_new_key, [1, 2])
 		`,
-			expect: "[1,2]",
-			fail:   false,
+			expect:      "[1,2]",
+			checkExport: true,
+			fail:        false,
 		},
 		{
 			name: "value type: map compatibility",
@@ -114,8 +116,9 @@ add_key(add_new_key, "shanghai")
 			pl: `
 		add_key(add_new_key, {"a": 1, "b": "x"})
 		`,
-			expect: `{"a":1,"b":"x"}`,
-			fail:   false,
+			expect:      `{"a":1,"b":"x"}`,
+			checkExport: true,
+			fail:        false,
 		},
 	}
 
@@ -138,6 +141,10 @@ add_key(add_new_key, "shanghai")
 				v, _, e := pt.Get("add_new_key")
 				assert.NoError(t, e)
 				assert.Equal(t, tc.expect, v)
+				if tc.checkExport {
+					assert.Equal(t, tc.expect, pt.Fields()["add_new_key"])
+					assert.Equal(t, tc.expect, pt.Point().KVs().InfluxFields()["add_new_key"])
+				}
 				t.Logf("[%d] PASS", idx)
 			} else {
 				t.Error(errR)
