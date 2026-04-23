@@ -92,6 +92,15 @@ func TestJSON(t *testing.T) {
 			expected: "not_space",
 		},
 		{
+			name: "source_replaced_between_json_calls",
+			in:   `{"a":{"first":1}}`,
+			script: `json(_, a.first, first)
+			add_key("message", "{\"a\":{\"second\":2}}")
+			json(_, a.second, second)`,
+			key:      "second",
+			expected: float64(2),
+		},
+		{
 			name:     "map_delete_after",
 			in:       `{"item": " not_space "}`,
 			script:   `json(_, item, item, true, true)`,
@@ -180,6 +189,27 @@ json(friends, .[1].first, f_first)`)
 	    {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
 	  ]
 	}`
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		pt := ptinput.NewPlPt(
+			point.Logging, "test", nil, map[string]any{"message": in}, time.Now())
+		if err := runScript(runner, pt); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkJSONRepeatedSource(b *testing.B) {
+	runner, err := NewTestingRunner(`json(_, a.first, first)
+json(_, a.second, second)
+json(_, a.third, third)
+json(_, a.forth, forth)`)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	in := `{"a":{"first": 2.3, "second":2,"third":"aBC","forth":true},"age":47}`
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

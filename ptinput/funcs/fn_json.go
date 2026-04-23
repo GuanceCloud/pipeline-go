@@ -19,6 +19,19 @@ import (
 	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
+type compiledGJSONPath struct {
+	path string
+	ok   bool
+}
+
+var gjsonPathEscapeReplacer = strings.NewReplacer(
+	"\\", "\\\\",
+	".", "\\.",
+	"*", "\\*",
+	"?", "\\?",
+	"#", "\\#",
+)
+
 func JSONChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if err := normalizeFuncArgsDeprecated(funcExpr, []string{
 		"input", "json_path", "newkey",
@@ -74,6 +87,8 @@ func JSONChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 				funcExpr.Param[3].NodeType), funcExpr.Param[4].StartPos())
 		}
 	}
+
+	funcExpr.PrivateData = compileGJSONPathData(funcExpr.Param[1])
 
 	return nil
 }
@@ -165,7 +180,7 @@ func JSON(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		}
 	} else {
 		var err error
-		v, dtype, err = GJSONGet(cont, jpath)
+		v, dtype, err = GJSONGet(cont, jpath, getCompiledGJSONPath(funcExpr))
 		if err != nil {
 			l.Debug(err)
 			return nil
@@ -214,9 +229,17 @@ func GsonGet(s string, node *ast.Node, deleteAfter bool) (any, string, error) {
 	return val, dst, nil
 }
 
-func GJSONGet(s string, node *ast.Node) (any, ast.DType, error) {
+func GJSONGet(s string, node *ast.Node, compiled *compiledGJSONPath) (any, ast.DType, error) {
 	if !gjson.Valid(s) {
 		return nil, ast.Invalid, fmt.Errorf("invalid json")
+	}
+
+	if compiled != nil && compiled.ok {
+		res := gjson.Get(s, compiled.path)
+		if !res.Exists() {
+			return nil, ast.Invalid, fmt.Errorf("%s not found", compiled.path)
+		}
+		return gjsonResultValue(res)
 	}
 
 	res, err := gjsonGet(gjson.Parse(s), node)
@@ -225,6 +248,24 @@ func GJSONGet(s string, node *ast.Node) (any, ast.DType, error) {
 	}
 
 	return gjsonResultValue(res)
+}
+
+func getCompiledGJSONPath(funcExpr *ast.CallExpr) *compiledGJSONPath {
+	if funcExpr == nil {
+		return nil
+	}
+	if compiled, ok := funcExpr.PrivateData.(*compiledGJSONPath); ok {
+		return compiled
+	}
+	return nil
+}
+
+func compileGJSONPathData(node *ast.Node) *compiledGJSONPath {
+	path, ok := compileGJSONPath(node)
+	return &compiledGJSONPath{
+		path: path,
+		ok:   ok,
+	}
 }
 
 func jsonGet(val any, node *ast.Node, deleteAfter bool) (any, error) {
@@ -267,6 +308,78 @@ func gjsonGet(res gjson.Result, node *ast.Node) (gjson.Result, error) {
 	default:
 		return gjson.Result{}, fmt.Errorf("json unsupport get from %s", node.NodeType)
 	}
+}
+
+func compileGJSONPath(node *ast.Node) (string, bool) {
+	parts, ok := compileGJSONPathParts(node)
+	if !ok {
+		return "", false
+	}
+
+	return strings.Join(parts, "."), true
+}
+
+func compileGJSONPathParts(node *ast.Node) ([]string, bool) {
+	switch node.NodeType { //nolint:exhaustive
+	case ast.TypeIdentifier:
+		return []string{escapeGJSONPathPart(node.Identifier().Name)}, true
+	case ast.TypeStringLiteral:
+		return []string{escapeGJSONPathPart(node.StringLiteral().Val)}, true
+	case ast.TypeAttrExpr:
+		return compileGJSONAttrPathParts(node.AttrExpr())
+	case ast.TypeIndexExpr:
+		return compileGJSONIndexPathParts(node.IndexExpr())
+	default:
+		return nil, false
+	}
+}
+
+func compileGJSONAttrPathParts(expr *ast.AttrExpr) ([]string, bool) {
+	if expr == nil {
+		return nil, false
+	}
+	if expr.Attr == nil {
+		return compileGJSONPathParts(expr.Obj)
+	}
+
+	var parts []string
+	if expr.Obj != nil {
+		objParts, ok := compileGJSONPathParts(expr.Obj)
+		if !ok {
+			return nil, false
+		}
+		parts = append(parts, objParts...)
+	}
+
+	attrParts, ok := compileGJSONPathParts(expr.Attr)
+	if !ok {
+		return nil, false
+	}
+	return append(parts, attrParts...), true
+}
+
+func compileGJSONIndexPathParts(expr *ast.IndexExpr) ([]string, bool) {
+	if expr == nil {
+		return nil, false
+	}
+
+	parts := make([]string, 0, len(expr.Index)+1)
+	if expr.Obj != nil {
+		parts = append(parts, escapeGJSONPathPart(expr.Obj.Name))
+	}
+
+	for _, idxNode := range expr.Index {
+		idx, err := jsonIndex(idxNode)
+		if err != nil || idx < 0 {
+			return nil, false
+		}
+		parts = append(parts, fmt.Sprintf("%d", idx))
+	}
+	return parts, true
+}
+
+func escapeGJSONPathPart(part string) string {
+	return gjsonPathEscapeReplacer.Replace(part)
 }
 
 func getByAttr(val any, i *ast.AttrExpr, deleteAfter bool) (any, error) {
