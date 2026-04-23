@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/goccy/go-json"
+	"github.com/tidwall/gjson"
 
 	"github.com/GuanceCloud/pipeline-go/ptinput"
 	"github.com/GuanceCloud/platypus/pkg/ast"
@@ -123,12 +124,6 @@ func JSON(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		}
 	}
 
-	v, dstS, err := GsonGet(cont, jpath, deleteAfterExtract)
-	if err != nil {
-		l.Debug(err)
-		return nil
-	}
-
 	trimSpace := true
 	if funcExpr.Param[3] != nil {
 		switch funcExpr.Param[3].NodeType { //nolint:exhaustive
@@ -140,25 +135,50 @@ func JSON(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		}
 	}
 
+	var (
+		v     any
+		dtype ast.DType
+		dstS  string
+	)
+
+	if deleteAfterExtract {
+		var err error
+		v, dstS, err = GsonGet(cont, jpath, true)
+		if err != nil {
+			l.Debug(err)
+			return nil
+		}
+
+		switch v.(type) {
+		case bool:
+			dtype = ast.Bool
+		case float64:
+			dtype = ast.Float
+		case string:
+			dtype = ast.String
+		case []any:
+			dtype = ast.List
+		case map[string]any:
+			dtype = ast.Map
+		default:
+			return nil
+		}
+	} else {
+		var err error
+		v, dtype, err = GJSONGet(cont, jpath)
+		if err != nil {
+			l.Debug(err)
+			return nil
+		}
+		if dtype == ast.Nil || dtype == ast.Invalid {
+			return nil
+		}
+	}
+
 	if vStr, ok := v.(string); ok && trimSpace {
 		v = strings.TrimSpace(vStr)
 	}
 
-	var dtype ast.DType
-	switch v.(type) {
-	case bool:
-		dtype = ast.Bool
-	case float64:
-		dtype = ast.Float
-	case string:
-		dtype = ast.String
-	case []any:
-		dtype = ast.List
-	case map[string]any:
-		dtype = ast.Map
-	default:
-		return nil
-	}
 	if ok := addKey2PtWithVal(ctx.InData(), targetKey, v, dtype, ptinput.KindPtDefault); !ok {
 		return nil
 	}
@@ -194,6 +214,19 @@ func GsonGet(s string, node *ast.Node, deleteAfter bool) (any, string, error) {
 	return val, dst, nil
 }
 
+func GJSONGet(s string, node *ast.Node) (any, ast.DType, error) {
+	if !gjson.Valid(s) {
+		return nil, ast.Invalid, fmt.Errorf("invalid json")
+	}
+
+	res, err := gjsonGet(gjson.Parse(s), node)
+	if err != nil {
+		return nil, ast.Invalid, err
+	}
+
+	return gjsonResultValue(res)
+}
+
 func jsonGet(val any, node *ast.Node, deleteAfter bool) (any, error) {
 	switch node.NodeType { //nolint:exhaustive
 	case ast.TypeStringLiteral:
@@ -217,6 +250,25 @@ func jsonGet(val any, node *ast.Node, deleteAfter bool) (any, error) {
 	}
 }
 
+func gjsonGet(res gjson.Result, node *ast.Node) (gjson.Result, error) {
+	switch node.NodeType { //nolint:exhaustive
+	case ast.TypeStringLiteral:
+		return gjsonGetByIdentifier(res, node.StringLiteral().Val)
+	case ast.TypeAttrExpr:
+		return gjsonGetByAttr(res, node.AttrExpr())
+	case ast.TypeIdentifier:
+		return gjsonGetByIdentifier(res, node.Identifier().Name)
+	case ast.TypeIndexExpr:
+		child, err := gjsonGetByIdentifierNode(res, node.IndexExpr().Obj)
+		if err != nil {
+			return gjson.Result{}, err
+		}
+		return gjsonGetByIndex(child, node.IndexExpr(), 0)
+	default:
+		return gjson.Result{}, fmt.Errorf("json unsupport get from %s", node.NodeType)
+	}
+}
+
 func getByAttr(val any, i *ast.AttrExpr, deleteAfter bool) (any, error) {
 	if i.Attr != nil {
 		child, err := jsonGet(val, i.Obj, false)
@@ -231,6 +283,18 @@ func getByAttr(val any, i *ast.AttrExpr, deleteAfter bool) (any, error) {
 		}
 		return child, nil
 	}
+}
+
+func gjsonGetByAttr(res gjson.Result, i *ast.AttrExpr) (gjson.Result, error) {
+	if i.Attr != nil {
+		child, err := gjsonGet(res, i.Obj)
+		if err != nil {
+			return gjson.Result{}, err
+		}
+		return gjsonGet(child, i.Attr)
+	}
+
+	return gjsonGet(res, i.Obj)
 }
 
 func getByIdentifier(val any, i *ast.Identifier, deleteAfter bool) (any, error) {
@@ -251,6 +315,27 @@ func getByIdentifier(val any, i *ast.Identifier, deleteAfter bool) (any, error) 
 	default:
 		return nil, fmt.Errorf("%v unsupport identifier get", reflect.TypeOf(v))
 	}
+}
+
+func gjsonGetByIdentifierNode(res gjson.Result, i *ast.Identifier) (gjson.Result, error) {
+	if i == nil {
+		return res, nil
+	}
+
+	return gjsonGetByIdentifier(res, i.Name)
+}
+
+func gjsonGetByIdentifier(res gjson.Result, key string) (gjson.Result, error) {
+	if !res.IsObject() {
+		return gjson.Result{}, fmt.Errorf("%s unsupport identifier get", res.Type)
+	}
+
+	child, ok := res.Map()[key]
+	if !ok {
+		return gjson.Result{}, fmt.Errorf("%v not found", key)
+	}
+
+	return child, nil
 }
 
 func getByIndex(val any, i *ast.IndexExpr, dimension int, deleteAfter bool) (any, error) {
@@ -289,6 +374,70 @@ func getByIndex(val any, i *ast.IndexExpr, dimension int, deleteAfter bool) (any
 	default:
 		return nil, fmt.Errorf("%v unsupport index get", reflect.TypeOf(v))
 	}
+}
+
+func gjsonGetByIndex(res gjson.Result, i *ast.IndexExpr, dimension int) (gjson.Result, error) {
+	if !res.IsArray() {
+		return gjson.Result{}, fmt.Errorf("%s unsupport index get", res.Type)
+	}
+
+	if dimension >= len(i.Index) {
+		return gjson.Result{}, fmt.Errorf("dimension exceed")
+	}
+
+	index, err := jsonIndex(i.Index[dimension])
+	if err != nil {
+		return gjson.Result{}, err
+	}
+
+	arr := res.Array()
+	if index < 0 {
+		index = len(arr) + index
+	}
+
+	if index < 0 || index >= len(arr) {
+		return gjson.Result{}, fmt.Errorf("index out of range")
+	}
+
+	child := arr[index]
+	if dimension == len(i.Index)-1 {
+		return child, nil
+	}
+
+	return gjsonGetByIndex(child, i, dimension+1)
+}
+
+func jsonIndex(node *ast.Node) (int, error) {
+	switch node.NodeType { //nolint:exhaustive
+	case ast.TypeIntegerLiteral:
+		return int(node.IntegerLiteral().Val), nil
+	case ast.TypeFloatLiteral:
+		return int(node.FloatLiteral().Val), nil
+	default:
+		return 0, fmt.Errorf("index value is not int")
+	}
+}
+
+func gjsonResultValue(res gjson.Result) (any, ast.DType, error) {
+	switch res.Type {
+	case gjson.Number:
+		return res.Float(), ast.Float, nil
+	case gjson.True, gjson.False:
+		return res.Bool(), ast.Bool, nil
+	case gjson.String:
+		return res.String(), ast.String, nil
+	case gjson.JSON:
+		if res.IsObject() {
+			return res.Value(), ast.Map, nil
+		}
+		if res.IsArray() {
+			return res.Value(), ast.List, nil
+		}
+	case gjson.Null:
+		return nil, ast.Nil, nil
+	}
+
+	return nil, ast.Invalid, fmt.Errorf("unsupported json result type %s", res.Type)
 }
 
 func lastIsIndex(expr *ast.Node) (bool, error) {

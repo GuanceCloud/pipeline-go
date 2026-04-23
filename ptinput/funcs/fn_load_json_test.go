@@ -126,3 +126,22 @@ func BenchmarkStrlen(b *testing.B) {
 		}
 	})
 }
+
+func BenchmarkLoadJSON(b *testing.B) {
+	runner, err := NewTestingRunner(`abc = load_json(_)
+add_key(abc, abc["a"]["first"])`)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	in := `{"a":{"first": 2.3, "second":2,"third":"aBC","forth":true},"age":47}`
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		pt := ptinput.NewPlPt(
+			point.Logging, "test", nil, map[string]any{"message": in}, time.Now())
+		if err := runScript(runner, pt); err != nil {
+			b.Fatal(err)
+		}
+	}
+}

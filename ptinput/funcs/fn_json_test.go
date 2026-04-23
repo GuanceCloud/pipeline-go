@@ -161,3 +161,32 @@ func TestJSON(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkJSON(b *testing.B) {
+	runner, err := NewTestingRunner(`json(_, friends)
+json(friends, .[1].first, f_first)`)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	in := `{
+	  "name": {"first": "Tom", "last": "Anderson"},
+	  "age":37,
+	  "children": ["Sara","Alex","Jack"],
+	  "fav.movie": "Deer Hunter",
+	  "friends": [
+	    {"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},
+	    {"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]},
+	    {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
+	  ]
+	}`
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		pt := ptinput.NewPlPt(
+			point.Logging, "test", nil, map[string]any{"message": in}, time.Now())
+		if err := runScript(runner, pt); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
