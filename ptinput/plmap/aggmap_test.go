@@ -120,9 +120,19 @@ func TestAggMetric(t *testing.T) {
 			o:      1.0,
 		},
 		{
+			action: "min",
+			d:      []any{3, 1, 2},
+			o:      1.0,
+		},
+		{
 			action: "max",
 			d:      []any{1, 2, 1, 2},
 			o:      2.0,
+		},
+		{
+			action: "max",
+			d:      []any{-3, -1, -2},
+			o:      -1.0,
 		},
 		{
 			action: "set",

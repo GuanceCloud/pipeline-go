@@ -196,6 +196,17 @@ func TestPlReferTablesSqlite_query(t *testing.T) {
 			want:  map[string]any{"id": int64(23), "name": "Michael", "age": int64(25), "alive": int64(1), "grade": 99.5},
 			want1: true,
 		},
+		{
+			name: "no rows",
+			args: args{
+				tableName: "test",
+				colName:   []string{"id"},
+				colValue:  []any{99},
+				kGet:      []string{"id", "name"},
+			},
+			want:  nil,
+			want1: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

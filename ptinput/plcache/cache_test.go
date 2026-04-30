@@ -31,6 +31,19 @@ func TestCache_SetAndGet(t *testing.T) {
 	assert.True(t, exists1 && exists2 && exists3 && exists4)
 }
 
+func TestCache_SetVisibleAfterReturn(t *testing.T) {
+	cache, _ := NewCache(time.Second, 10)
+	defer cache.Stop()
+
+	err := cache.Set("key", "value", 10*time.Second)
+	assert.Nil(t, err)
+
+	got, exists, err := cache.Get("key")
+	assert.Nil(t, err)
+	assert.True(t, exists)
+	assert.Equal(t, "value", got)
+}
+
 func TestCache_RemoveExpiredCache(t *testing.T) {
 	cache, _ := NewCache(time.Second, 10)
 	_ = cache.Set("key", "value", 5*time.Second)
@@ -43,8 +56,56 @@ func TestCache_RemoveExpiredCache(t *testing.T) {
 	assert.True(t, exist1 == true && exist2 == false)
 }
 
+func TestCache_RemoveExpiredCacheMultipleItemsInSlot(t *testing.T) {
+	cache, _ := NewCache(10*time.Millisecond, 2)
+	defer cache.Stop()
+
+	_ = cache.Set("key1", "value1", 10*time.Millisecond)
+	_ = cache.Set("key2", "value2", 10*time.Millisecond)
+
+	time.Sleep(30 * time.Millisecond)
+
+	_, exist1, _ := cache.Get("key1")
+	_, exist2, _ := cache.Get("key2")
+	assert.False(t, exist1)
+	assert.False(t, exist2)
+}
+
+func TestCache_RemoveExpiredCacheWithCircle(t *testing.T) {
+	cache, _ := NewCache(10*time.Millisecond, 2)
+	defer cache.Stop()
+
+	_ = cache.Set("key", "value", 50*time.Millisecond)
+
+	time.Sleep(30 * time.Millisecond)
+	_, exist1, _ := cache.Get("key")
+	time.Sleep(60 * time.Millisecond)
+	_, exist2, _ := cache.Get("key")
+
+	assert.True(t, exist1)
+	assert.False(t, exist2)
+}
+
+func TestCache_SetSameKeyRefreshesExpiration(t *testing.T) {
+	cache, _ := NewCache(10*time.Millisecond, 2)
+	defer cache.Stop()
+
+	_ = cache.Set("key", "old", 10*time.Millisecond)
+	_ = cache.Set("key", "new", 80*time.Millisecond)
+
+	time.Sleep(30 * time.Millisecond)
+	got, exist1, _ := cache.Get("key")
+	time.Sleep(80 * time.Millisecond)
+	_, exist2, _ := cache.Get("key")
+
+	assert.True(t, exist1)
+	assert.Equal(t, "new", got)
+	assert.False(t, exist2)
+}
+
 func TestCache_Stop(t *testing.T) {
 	cache, _ := NewCache(time.Second, 10)
+	cache.Stop()
 	cache.Stop()
 
 	err1 := cache.Set("key", "value", 10*time.Second)

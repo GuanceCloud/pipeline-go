@@ -54,11 +54,12 @@ func (p *PlReferTablesSqlite) Query(tableName string, colName []string, colValue
 		itAddrs[i] = &its[i]
 	}
 	// Scan only one row.
-	if result.Next() {
-		if err := result.Scan(itAddrs...); err != nil {
-			l.Errorf("failed to scan query result: %v", err)
-			return nil, false
-		}
+	if !result.Next() {
+		return nil, false
+	}
+	if err := result.Scan(itAddrs...); err != nil {
+		l.Errorf("failed to scan query result: %v", err)
+		return nil, false
 	}
 
 	ret := make(map[string]any)
