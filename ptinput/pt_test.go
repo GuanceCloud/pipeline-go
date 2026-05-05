@@ -226,6 +226,61 @@ func TestPtSetPreserveMap(t *testing.T) {
 	assert.Equal(t, `{"a":1,"b":"x"}`, v)
 }
 
+func TestPtSetReplacesExistingField(t *testing.T) {
+	pt := NewPlPt(point.Logging, "t", nil, nil, time.Now())
+
+	assert.True(t, pt.Set("dup", "old", ast.String))
+	assert.True(t, pt.Set("dup", "new", ast.String))
+
+	kv, count := findPointKV(pt.Point(), "dup")
+	assert.Equal(t, 1, count)
+	assert.NotNil(t, kv)
+	assert.False(t, kv.IsTag)
+	assert.Equal(t, "new", pt.Fields()["dup"])
+}
+
+func TestPtSetPreservesExistingTag(t *testing.T) {
+	pt := NewPlPt(point.Logging, "t", nil, nil, time.Now())
+
+	assert.True(t, pt.SetTag("status", "old", ast.String))
+	assert.True(t, pt.Set("status", "new", ast.String))
+
+	kv, count := findPointKV(pt.Point(), "status")
+	assert.Equal(t, 1, count)
+	assert.NotNil(t, kv)
+	assert.True(t, kv.IsTag)
+	assert.Equal(t, "new", pt.Tags()["status"])
+	_, existsAsField := pt.Fields()["status"]
+	assert.False(t, existsAsField)
+}
+
+func TestPtSetTagReplacesExistingField(t *testing.T) {
+	pt := NewPlPt(point.Logging, "t", nil, nil, time.Now())
+
+	assert.True(t, pt.Set("status", "old", ast.String))
+	assert.True(t, pt.SetTag("status", "new", ast.String))
+
+	kv, count := findPointKV(pt.Point(), "status")
+	assert.Equal(t, 1, count)
+	assert.NotNil(t, kv)
+	assert.True(t, kv.IsTag)
+	assert.Equal(t, "new", pt.Tags()["status"])
+	_, existsAsField := pt.Fields()["status"]
+	assert.False(t, existsAsField)
+}
+
+func findPointKV(pt *point.Point, key string) (*point.Field, int) {
+	var found *point.Field
+	count := 0
+	for _, kv := range pt.KVs() {
+		if kv.Key == key {
+			found = kv
+			count++
+		}
+	}
+	return found, count
+}
+
 var lp = []byte(`gin app="deployment-forethought-kodo-kodo",client_ip="172.1***03",cluster_name_k8s="k8s-daily",container_id="dcbacc667c1534127d4f4c531fc26f613f4e6f822e646dee4e4bdbc5e87920c4",container_name="kodo",deployment="kodo",filepath="/rootfs/var/log/pods/forethought-kodo_kodo-7dc8b5c448-rmcpb_bd5159c7-df57-4346-987d-fc6883aeabea/kodo/0.log",test_site="daily",host="cluster_a_cn-hangzhou.172.1***.102",host_ip="172.1***.102",image="registry.****.com/ko**:testing-202*****",log_read_lines=289892,message="[GIN] 2024/11/15 - 10:56:07 | 403 | 759.859µs |  172.16.200.203 | POST    \"/v1/write/metric?token=****************842cda605c6cb87e3a7b8\"",message_length=137,namespace="forethought-kodo",pod-template-hash="7dc8b5c448",pod_ip="10.113.0.204",pod_name="kodo-7dc8b5c448-rmcpb",real_host="hz--daily-002",region="cn-hangzhou",service="kodo",status="warning",time_ns=1731639367526632400,time_us=1731639367526632,timestamp="2024/11/15 - 10:56:07",zone_id="cn-hangzhou-j" 1731639367526000000`)
 
 func BenchmarkPts(b *testing.B) {

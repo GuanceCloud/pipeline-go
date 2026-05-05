@@ -141,8 +141,17 @@ func (pp *Pt) SetTag(k string, v any, dtype ast.DType) bool {
 
 func (pp *Pt) _set(k string, v any, asTag bool, asField bool) {
 	// replace high level
-	kv := pp.pt.KVs().Get(k)
-	if kv != nil && kv.IsTag && !asField {
+	kvs := pp.pt.KVs()
+	idx := -1
+	existAsTag := false
+	for i, kv := range kvs {
+		if kv.Key == k {
+			idx = i
+			existAsTag = kv.IsTag
+			break
+		}
+	}
+	if existAsTag && !asField {
 		asTag = true
 	}
 
@@ -154,7 +163,13 @@ func (pp *Pt) _set(k string, v any, asTag bool, asField bool) {
 		v, _ = normalVal(v, false, false)
 	}
 
-	pp.pt.MustAddKVs(point.NewKV(k, v, point.WithKVTagSet(asTag)))
+	kv := point.NewKV(k, v, point.WithKVTagSet(asTag))
+	if idx >= 0 {
+		kvs[idx] = kv
+	} else {
+		kvs = append(kvs, kv)
+	}
+	pp.pt.PBPoint().Fields = kvs
 }
 
 func (pp *Pt) Delete(k string) {
