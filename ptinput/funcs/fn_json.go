@@ -30,6 +30,11 @@ var gjsonPathEscapeReplacer = strings.NewReplacer(
 	"*", "\\*",
 	"?", "\\?",
 	"#", "\\#",
+	"|", "\\|",
+	"@", "\\@",
+	"!", "\\!",
+	"[", "\\[",
+	"{", "\\{",
 )
 
 func JSONChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
