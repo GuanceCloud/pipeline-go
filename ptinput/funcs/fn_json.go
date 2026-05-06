@@ -385,16 +385,25 @@ func compileGJSONPath(node *ast.Node) (string, bool) {
 func compileGJSONPathParts(node *ast.Node) ([]string, bool) {
 	switch node.NodeType { //nolint:exhaustive
 	case ast.TypeIdentifier:
-		return []string{escapeGJSONPathPart(node.Identifier().Name)}, true
+		return compileGJSONPathPart(node.Identifier().Name)
 	case ast.TypeStringLiteral:
-		return []string{escapeGJSONPathPart(node.StringLiteral().Val)}, true
+		return compileGJSONPathPart(node.StringLiteral().Val)
 	case ast.TypeAttrExpr:
 		return compileGJSONAttrPathParts(node.AttrExpr())
 	case ast.TypeIndexExpr:
-		return compileGJSONIndexPathParts(node.IndexExpr())
+		// gjson numeric path segments also match object keys like "0".
+		// Keep IndexExpr on the strict walker so indexes only apply to arrays.
+		return nil, false
 	default:
 		return nil, false
 	}
+}
+
+func compileGJSONPathPart(part string) ([]string, bool) {
+	if isGJSONArrayIndexPathPart(part) {
+		return nil, false
+	}
+	return []string{escapeGJSONPathPart(part)}, true
 }
 
 func compileGJSONAttrPathParts(expr *ast.AttrExpr) ([]string, bool) {
@@ -443,6 +452,18 @@ func compileGJSONIndexPathParts(expr *ast.IndexExpr) ([]string, bool) {
 
 func escapeGJSONPathPart(part string) string {
 	return gjsonPathEscapeReplacer.Replace(part)
+}
+
+func isGJSONArrayIndexPathPart(part string) bool {
+	if part == "" {
+		return false
+	}
+	for _, ch := range part {
+		if ch < '0' || ch > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 func getByAttr(val any, i *ast.AttrExpr, deleteAfter bool) (any, error) {

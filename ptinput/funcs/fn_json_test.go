@@ -99,6 +99,13 @@ func TestJSON(t *testing.T) {
 			expected: float64(123),
 		},
 		{
+			name:     "path_with_numeric_key",
+			in:       `{"0": 123}`,
+			script:   "json(_, `0`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
 			name:     "path_with_wildcard_in_key",
 			in:       `{"a*b": 123}`,
 			script:   "json(_, `a*b`, out)",
@@ -344,6 +351,36 @@ func TestJSON(t *testing.T) {
 			t.Logf("[%d] PASS", idx)
 		})
 	}
+}
+
+func TestJSONIndexDoesNotMatchObjectNumericKey(t *testing.T) {
+	runner, err := NewTestingRunner(`json(_, .[0], out)`)
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": `{"0":123}`}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	_, _, err = pt.Get("out")
+	assert.Error(t, err)
+}
+
+func TestJSONNumericKeyDoesNotMatchArrayIndex(t *testing.T) {
+	runner, err := NewTestingRunner("json(_, `0`, out)")
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": `[123]`}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	_, _, err = pt.Get("out")
+	assert.Error(t, err)
 }
 
 func BenchmarkJSON(b *testing.B) {
