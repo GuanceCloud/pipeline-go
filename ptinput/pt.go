@@ -222,11 +222,20 @@ func (pp *Pt) Category() point.Category {
 }
 
 func (pp *Pt) Tags() map[string]string {
-	tags := map[string]string{}
-	for _, kv := range pp.pt.KVs() {
+	kvs := pp.pt.KVs()
+	tagCount := 0
+	for _, kv := range kvs {
 		if kv.IsTag {
-			if v, ok := kv.Raw().(string); ok {
-				tags[kv.Key] = v
+			if _, ok := kv.Val.(*point.Field_S); ok {
+				tagCount++
+			}
+		}
+	}
+	tags := make(map[string]string, tagCount)
+	for _, kv := range kvs {
+		if kv.IsTag {
+			if _, ok := kv.Val.(*point.Field_S); ok {
+				tags[kv.Key] = kv.GetS()
 			}
 		}
 	}
@@ -234,8 +243,15 @@ func (pp *Pt) Tags() map[string]string {
 }
 
 func (pp *Pt) Fields() map[string]any {
-	fields := map[string]any{}
-	for _, kv := range pp.pt.KVs() {
+	kvs := pp.pt.KVs()
+	fieldCount := 0
+	for _, kv := range kvs {
+		if !kv.IsTag {
+			fieldCount++
+		}
+	}
+	fields := make(map[string]any, fieldCount)
+	for _, kv := range kvs {
 		if !kv.IsTag {
 			fields[kv.Key] = kv.Raw()
 		}

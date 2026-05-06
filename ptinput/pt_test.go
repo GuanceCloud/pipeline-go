@@ -387,3 +387,47 @@ func ptMockOperatorDel(pti PlInputPt) {
 		pti.Set(n, n, ast.String)
 	}
 }
+
+var (
+	benchTagsSink   map[string]string
+	benchFieldsSink map[string]any
+)
+
+func BenchmarkPtTagsFields(b *testing.B) {
+	pt := newBenchmarkPt(12, 80)
+
+	b.Run("tags", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			benchTagsSink = pt.Tags()
+		}
+	})
+
+	b.Run("fields", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			benchFieldsSink = pt.Fields()
+		}
+	})
+
+	b.Run("tags_fields", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			benchTagsSink = pt.Tags()
+			benchFieldsSink = pt.Fields()
+		}
+	})
+}
+
+func newBenchmarkPt(tagCount, fieldCount int) *Pt {
+	tags := make(map[string]string, tagCount)
+	fields := make(map[string]any, fieldCount+1)
+	fields[Originkey] = "bench message"
+	for i := 0; i < tagCount; i++ {
+		tags["tag_"+strconv.Itoa(i)] = "value_" + strconv.Itoa(i)
+	}
+	for i := 0; i < fieldCount; i++ {
+		fields["field_"+strconv.Itoa(i)] = int64(i)
+	}
+	return NewPlPt(point.Logging, "bench", tags, fields, time.Now()).(*Pt)
+}

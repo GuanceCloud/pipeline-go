@@ -24,6 +24,14 @@ type compiledGJSONPath struct {
 	ok   bool
 }
 
+type compiledJSONCall struct {
+	srcKey             string
+	targetKey          string
+	trimSpace          bool
+	deleteAfterExtract bool
+	gjsonPath          *compiledGJSONPath
+}
+
 var gjsonPathEscapeReplacer = strings.NewReplacer(
 	"\\", "\\\\",
 	".", "\\.",
@@ -93,17 +101,32 @@ func JSONChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		}
 	}
 
-	funcExpr.PrivateData = compileGJSONPathData(funcExpr.Param[1])
+	funcExpr.PrivateData = compileJSONCallData(funcExpr)
 
 	return nil
 }
 
 func JSON(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	var jpath *ast.Node
+	var compiled *compiledJSONCall
 
-	srcKey, err := getKeyName(funcExpr.Param[0])
-	if err != nil {
-		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
+	srcKey := ""
+	targetKey := ""
+	deleteAfterExtract := false
+	trimSpace := true
+
+	if c := getCompiledJSONCall(funcExpr); c != nil {
+		compiled = c
+		srcKey = c.srcKey
+		targetKey = c.targetKey
+		deleteAfterExtract = c.deleteAfterExtract
+		trimSpace = c.trimSpace
+	} else {
+		var err error
+		srcKey, err = getKeyName(funcExpr.Param[0])
+		if err != nil {
+			return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[0].StartPos())
+		}
 	}
 
 	switch funcExpr.Param[1].NodeType { //nolint:exhaustive
@@ -115,15 +138,17 @@ func JSON(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 			funcExpr.Param[1].NodeType), funcExpr.Param[1].StartPos())
 	}
 
-	targetKey, _ := getKeyName(jpath)
+	if compiled == nil {
+		targetKey, _ = getKeyName(jpath)
 
-	if funcExpr.Param[2] != nil {
-		switch funcExpr.Param[2].NodeType { //nolint:exhaustive
-		case ast.TypeAttrExpr, ast.TypeIdentifier, ast.TypeStringLiteral:
-			targetKey, _ = getKeyName(funcExpr.Param[2])
-		default:
-			return runtime.NewRunError(ctx, fmt.Sprintf("expect AttrExpr or Identifier, got %s",
-				funcExpr.Param[2].NodeType), funcExpr.Param[2].StartPos())
+		if funcExpr.Param[2] != nil {
+			switch funcExpr.Param[2].NodeType { //nolint:exhaustive
+			case ast.TypeAttrExpr, ast.TypeIdentifier, ast.TypeStringLiteral:
+				targetKey, _ = getKeyName(funcExpr.Param[2])
+			default:
+				return runtime.NewRunError(ctx, fmt.Sprintf("expect AttrExpr or Identifier, got %s",
+					funcExpr.Param[2].NodeType), funcExpr.Param[2].StartPos())
+			}
 		}
 	}
 
@@ -133,25 +158,25 @@ func JSON(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		return nil
 	}
 
-	deleteAfterExtract := false
-	if funcExpr.Param[4] != nil {
-		switch funcExpr.Param[4].NodeType { //nolint:exhaustive
-		case ast.TypeBoolLiteral:
-			deleteAfterExtract = funcExpr.Param[4].BoolLiteral().Val
-		default:
-			return runtime.NewRunError(ctx, fmt.Sprintf("expect BoolLiteral, got %s",
-				funcExpr.Param[3].NodeType), funcExpr.Param[4].StartPos())
+	if compiled == nil {
+		if funcExpr.Param[4] != nil {
+			switch funcExpr.Param[4].NodeType { //nolint:exhaustive
+			case ast.TypeBoolLiteral:
+				deleteAfterExtract = funcExpr.Param[4].BoolLiteral().Val
+			default:
+				return runtime.NewRunError(ctx, fmt.Sprintf("expect BoolLiteral, got %s",
+					funcExpr.Param[3].NodeType), funcExpr.Param[4].StartPos())
+			}
 		}
-	}
 
-	trimSpace := true
-	if funcExpr.Param[3] != nil {
-		switch funcExpr.Param[3].NodeType { //nolint:exhaustive
-		case ast.TypeBoolLiteral:
-			trimSpace = funcExpr.Param[3].BoolLiteral().Val
-		default:
-			return runtime.NewRunError(ctx, fmt.Sprintf("expect BoolLiteral, got %s",
-				funcExpr.Param[3].NodeType), funcExpr.Param[3].StartPos())
+		if funcExpr.Param[3] != nil {
+			switch funcExpr.Param[3].NodeType { //nolint:exhaustive
+			case ast.TypeBoolLiteral:
+				trimSpace = funcExpr.Param[3].BoolLiteral().Val
+			default:
+				return runtime.NewRunError(ctx, fmt.Sprintf("expect BoolLiteral, got %s",
+					funcExpr.Param[3].NodeType), funcExpr.Param[3].StartPos())
+			}
 		}
 	}
 
@@ -185,7 +210,7 @@ func JSON(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		}
 	} else {
 		var err error
-		v, dtype, err = GJSONGet(cont, jpath, getCompiledGJSONPath(funcExpr))
+		v, dtype, err = GJSONGet(cont, jpath, getCompiledGJSONPath(compiled))
 		if err != nil {
 			l.Debug(err)
 			return nil
@@ -208,6 +233,32 @@ func JSON(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	}
 
 	return nil
+}
+
+func compileJSONCallData(funcExpr *ast.CallExpr) *compiledJSONCall {
+	srcKey, _ := getKeyName(funcExpr.Param[0])
+	targetKey, _ := getKeyName(funcExpr.Param[1])
+	if funcExpr.Param[2] != nil {
+		targetKey, _ = getKeyName(funcExpr.Param[2])
+	}
+
+	trimSpace := true
+	if funcExpr.Param[3] != nil {
+		trimSpace = funcExpr.Param[3].BoolLiteral().Val
+	}
+
+	deleteAfterExtract := false
+	if funcExpr.Param[4] != nil {
+		deleteAfterExtract = funcExpr.Param[4].BoolLiteral().Val
+	}
+
+	return &compiledJSONCall{
+		srcKey:             srcKey,
+		targetKey:          targetKey,
+		trimSpace:          trimSpace,
+		deleteAfterExtract: deleteAfterExtract,
+		gjsonPath:          compileGJSONPathData(funcExpr.Param[1]),
+	}
 }
 
 func GsonGet(s string, node *ast.Node, deleteAfter bool) (any, string, error) {
@@ -255,14 +306,21 @@ func GJSONGet(s string, node *ast.Node, compiled *compiledGJSONPath) (any, ast.D
 	return gjsonResultValue(res)
 }
 
-func getCompiledGJSONPath(funcExpr *ast.CallExpr) *compiledGJSONPath {
+func getCompiledJSONCall(funcExpr *ast.CallExpr) *compiledJSONCall {
 	if funcExpr == nil {
 		return nil
 	}
-	if compiled, ok := funcExpr.PrivateData.(*compiledGJSONPath); ok {
+	if compiled, ok := funcExpr.PrivateData.(*compiledJSONCall); ok {
 		return compiled
 	}
 	return nil
+}
+
+func getCompiledGJSONPath(compiled *compiledJSONCall) *compiledGJSONPath {
+	if compiled == nil {
+		return nil
+	}
+	return compiled.gjsonPath
 }
 
 func compileGJSONPathData(node *ast.Node) *compiledGJSONPath {

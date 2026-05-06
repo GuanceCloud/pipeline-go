@@ -3,6 +3,7 @@ package funcs
 import (
 	_ "embed"
 
+	"github.com/GuanceCloud/cliutils/point"
 	"github.com/GuanceCloud/pipeline-go/ptinput"
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
@@ -254,29 +255,39 @@ func ptKvsKeys(ctx *runtime.Task, funcExpr *ast.CallExpr, vals ...any) *errchain
 		return nil
 	}
 
-	var elemCount int
+	ctx.Regs.ReturnAppend(ptKvsKeyList(pt, tags, fields), ast.List)
 
-	if tags {
-		elemCount += len(pt.Tags())
-	}
-	if fields {
-		elemCount += len(pt.Fields())
+	return nil
+}
+
+func ptKvsKeyList(pt ptinput.PlInputPt, tags, fields bool) []any {
+	kvs := pt.Point().KVs()
+	elemCount := 0
+	for _, kv := range kvs {
+		if includePtKvsKey(kv, tags, fields) {
+			elemCount++
+		}
 	}
 
 	keyList := make([]any, 0, elemCount)
-
-	if tags {
-		for k := range pt.Tags() {
-			keyList = append(keyList, k)
+	for _, kv := range kvs {
+		if includePtKvsKey(kv, tags, fields) {
+			keyList = append(keyList, kv.Key)
 		}
 	}
-	if fields {
-		for k := range pt.Fields() {
-			keyList = append(keyList, k)
-		}
+	return keyList
+}
+
+func includePtKvsKey(kv *point.Field, tags, fields bool) bool {
+	if kv == nil {
+		return false
 	}
-
-	ctx.Regs.ReturnAppend(keyList, ast.List)
-
-	return nil
+	if kv.IsTag {
+		if !tags {
+			return false
+		}
+		_, ok := kv.Val.(*point.Field_S)
+		return ok
+	}
+	return fields
 }
