@@ -20,8 +20,8 @@ import (
 )
 
 type compiledGJSONPath struct {
-	path string
-	ok   bool
+	parts []string
+	ok    bool
 }
 
 type compiledJSONCall struct {
@@ -31,19 +31,6 @@ type compiledJSONCall struct {
 	deleteAfterExtract bool
 	gjsonPath          *compiledGJSONPath
 }
-
-var gjsonPathEscapeReplacer = strings.NewReplacer(
-	"\\", "\\\\",
-	".", "\\.",
-	"*", "\\*",
-	"?", "\\?",
-	"#", "\\#",
-	"|", "\\|",
-	"@", "\\@",
-	"!", "\\!",
-	"[", "\\[",
-	"{", "\\{",
-)
 
 func JSONChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	if err := normalizeFuncArgsDeprecated(funcExpr, []string{
@@ -291,9 +278,9 @@ func GJSONGet(s string, node *ast.Node, compiled *compiledGJSONPath) (any, ast.D
 	}
 
 	if compiled != nil && compiled.ok {
-		res := gjson.Get(s, compiled.path)
-		if !res.Exists() {
-			return nil, ast.Invalid, fmt.Errorf("%s not found", compiled.path)
+		res, err := gjsonGetByPathParts(gjson.Parse(s), compiled.parts)
+		if err != nil {
+			return nil, ast.Invalid, err
 		}
 		return gjsonResultValue(res)
 	}
@@ -324,10 +311,10 @@ func getCompiledGJSONPath(compiled *compiledJSONCall) *compiledGJSONPath {
 }
 
 func compileGJSONPathData(node *ast.Node) *compiledGJSONPath {
-	path, ok := compileGJSONPath(node)
+	parts, ok := compileGJSONPathParts(node)
 	return &compiledGJSONPath{
-		path: path,
-		ok:   ok,
+		parts: parts,
+		ok:    ok,
 	}
 }
 
@@ -373,15 +360,6 @@ func gjsonGet(res gjson.Result, node *ast.Node) (gjson.Result, error) {
 	}
 }
 
-func compileGJSONPath(node *ast.Node) (string, bool) {
-	parts, ok := compileGJSONPathParts(node)
-	if !ok {
-		return "", false
-	}
-
-	return strings.Join(parts, "."), true
-}
-
 func compileGJSONPathParts(node *ast.Node) ([]string, bool) {
 	switch node.NodeType { //nolint:exhaustive
 	case ast.TypeIdentifier:
@@ -403,7 +381,7 @@ func compileGJSONPathPart(part string) ([]string, bool) {
 	if isGJSONArrayIndexPathPart(part) {
 		return nil, false
 	}
-	return []string{escapeGJSONPathPart(part)}, true
+	return []string{part}, true
 }
 
 func compileGJSONAttrPathParts(expr *ast.AttrExpr) ([]string, bool) {
@@ -428,30 +406,6 @@ func compileGJSONAttrPathParts(expr *ast.AttrExpr) ([]string, bool) {
 		return nil, false
 	}
 	return append(parts, attrParts...), true
-}
-
-func compileGJSONIndexPathParts(expr *ast.IndexExpr) ([]string, bool) {
-	if expr == nil {
-		return nil, false
-	}
-
-	parts := make([]string, 0, len(expr.Index)+1)
-	if expr.Obj != nil {
-		parts = append(parts, escapeGJSONPathPart(expr.Obj.Name))
-	}
-
-	for _, idxNode := range expr.Index {
-		idx, err := jsonIndex(idxNode)
-		if err != nil || idx < 0 {
-			return nil, false
-		}
-		parts = append(parts, fmt.Sprintf("%d", idx))
-	}
-	return parts, true
-}
-
-func escapeGJSONPathPart(part string) string {
-	return gjsonPathEscapeReplacer.Replace(part)
 }
 
 func isGJSONArrayIndexPathPart(part string) bool {
@@ -527,12 +481,33 @@ func gjsonGetByIdentifier(res gjson.Result, key string) (gjson.Result, error) {
 		return gjson.Result{}, fmt.Errorf("%s unsupport identifier get", res.Type)
 	}
 
-	child, ok := res.Map()[key]
-	if !ok {
+	var (
+		child gjson.Result
+		found bool
+	)
+	res.ForEach(func(k, v gjson.Result) bool {
+		if k.String() == key {
+			child = v
+			found = true
+		}
+		return true
+	})
+	if !found {
 		return gjson.Result{}, fmt.Errorf("%v not found", key)
 	}
 
 	return child, nil
+}
+
+func gjsonGetByPathParts(res gjson.Result, parts []string) (gjson.Result, error) {
+	for _, part := range parts {
+		var err error
+		res, err = gjsonGetByIdentifier(res, part)
+		if err != nil {
+			return gjson.Result{}, err
+		}
+	}
+	return res, nil
 }
 
 func getByIndex(val any, i *ast.IndexExpr, dimension int, deleteAfter bool) (any, error) {

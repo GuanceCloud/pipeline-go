@@ -262,14 +262,7 @@ func ptKvsKeys(ctx *runtime.Task, funcExpr *ast.CallExpr, vals ...any) *errchain
 
 func ptKvsKeyList(pt ptinput.PlInputPt, tags, fields bool) []any {
 	kvs := pt.Point().KVs()
-	elemCount := 0
-	for _, kv := range kvs {
-		if includePtKvsKey(kv, tags, fields) {
-			elemCount++
-		}
-	}
-
-	keyList := make([]any, 0, elemCount)
+	keyList := make([]any, 0, len(kvs))
 	for _, kv := range kvs {
 		if includePtKvsKey(kv, tags, fields) {
 			keyList = append(keyList, kv.Key)

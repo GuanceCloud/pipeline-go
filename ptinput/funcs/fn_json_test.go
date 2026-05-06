@@ -106,6 +106,20 @@ func TestJSON(t *testing.T) {
 			expected: float64(123),
 		},
 		{
+			name:     "duplicate_key_uses_last_value",
+			in:       `{"a": 1, "a": 2}`,
+			script:   "json(_, a, out)",
+			key:      "out",
+			expected: float64(2),
+		},
+		{
+			name:     "nested_duplicate_key_uses_last_value",
+			in:       `{"root": {"a": 1, "a": 2}}`,
+			script:   "json(_, root.a, out)",
+			key:      "out",
+			expected: float64(2),
+		},
+		{
 			name:     "path_with_wildcard_in_key",
 			in:       `{"a*b": 123}`,
 			script:   "json(_, `a*b`, out)",
