@@ -204,8 +204,8 @@ func TestPlReferTablesSqlite_query(t *testing.T) {
 				colValue:  []any{99},
 				kGet:      []string{"id", "name"},
 			},
-			want:  nil,
-			want1: false,
+			want:  map[string]any{"id": nil, "name": nil},
+			want1: true,
 		},
 	}
 	for _, tt := range tests {
