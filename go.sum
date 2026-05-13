@@ -6,8 +6,8 @@ github.com/DataDog/datadog-go/v5 v5.1.1 h1:JLZ6s2K1pG2h9GkvEvMdEGqMDyVLEAccdX5Tl
 github.com/DataDog/datadog-go/v5 v5.1.1/go.mod h1:KhiYb2Badlv9/rofz+OznKoEF5XKTonWyhx5K83AP8E=
 github.com/GuanceCloud/cliutils v1.1.22-0.20260326081525-39733a0223bf h1:jv3sbJVjOB/YYeqMUg7tsBBL2zTlovGLLtIMnzar+lo=
 github.com/GuanceCloud/cliutils v1.1.22-0.20260326081525-39733a0223bf/go.mod h1:srJuHkdED/YhjaIayQUJhmPBkmmVPzUX0hsbdIhYd5g=
-github.com/GuanceCloud/grok v1.1.5-0.20260513075043-e537eda5a944 h1:CBUMkvGEFBPAPRSHM3Eb7JNo7qkM+z59YxjI7a4vUVg=
-github.com/GuanceCloud/grok v1.1.5-0.20260513075043-e537eda5a944/go.mod h1:AeiXV1KQ6E62Xy5aC63TF+QhMcye8HvxCl/G/WFP6EM=
+github.com/GuanceCloud/grok v1.1.5-0.20260513103143-a1797907b1d0 h1:WXSg/50AX0l0RBvzoIEBjm49FyNsMihjS2nohApROes=
+github.com/GuanceCloud/grok v1.1.5-0.20260513103143-a1797907b1d0/go.mod h1:AeiXV1KQ6E62Xy5aC63TF+QhMcye8HvxCl/G/WFP6EM=
 github.com/GuanceCloud/influxdb1-client v0.1.8 h1:7XNICWcW+NxAHFkzQ8mkOCKA/8U2WNH5m+Hm9g0vz4k=
 github.com/GuanceCloud/influxdb1-client v0.1.8/go.mod h1:4HC4b/O653/ezBiHMPBnHYnHCCfsNT2LvCr7wNLngw4=
 github.com/GuanceCloud/platypus v0.3.4 h1:eukTGJbnzNi2pvWZ0Qo0bxmLctv8HUbZYejZSQK7jNM=
@@ -181,8 +181,6 @@ github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go/codec v1.2.9 h1:rmenucSohSTiyL09Y+l2OCk+FrMxGMzho2+tjr5ticU=
 github.com/ugorji/go/codec v1.2.9/go.mod h1:UNopzCgEMSXjBc6AOMqYvWC1ktqTAfzJZUZgYf6w6lg=
-github.com/vjeantet/grok v1.0.1 h1:2rhIR7J4gThTgcZ1m2JY4TrJZNgjn985U28kT2wQrJ4=
-github.com/vjeantet/grok v1.0.1/go.mod h1:ax1aAchzC6/QMXMcyzHQGZWaW1l195+uMYIkCWPCNIo=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
