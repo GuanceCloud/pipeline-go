@@ -221,3 +221,80 @@ grok(_, "%{WORD:date} %{time}")`,
 		})
 	}
 }
+
+func TestGrokFastPathCompatibility(t *testing.T) {
+	cases := []struct {
+		name, pl, in string
+		outkey       string
+		expected     interface{}
+	}{
+		{
+			name: "inverse_space_class_captures_whole_line_without_trim",
+			in:   " not_space ",
+			pl: `add_pattern("ANY", "[\\s\\S]*")
+grok(_, "%{ANY:item}", false)`,
+			outkey:   "item",
+			expected: " not_space ",
+		},
+		{
+			name: "inverse_space_class_captures_multiline",
+			in:   "line1\nline2",
+			pl: `add_pattern("ANY", "[\\s\\S]*")
+grok(_, "%{ANY:item}", false)`,
+			outkey:   "item",
+			expected: "line1\nline2",
+		},
+		{
+			name: "inverse_digit_class_preserves_punctuation_and_space",
+			in:   "abc- ",
+			pl: `add_pattern("NONDIGITS", "[\\D]*")
+grok(_, "%{NONDIGITS:item}", false)`,
+			outkey:   "item",
+			expected: "abc- ",
+		},
+		{
+			name: "inverse_word_class_before_literal",
+			in:   " -\tword",
+			pl: `add_pattern("NONWORDS", "[\\W]+")
+grok(_, "^%{NONWORDS:item}word$", false)`,
+			outkey:   "item",
+			expected: " -\t",
+		},
+		{
+			name: "dot_all_style_class_between_literals",
+			in:   "prefix: a:b :suffix",
+			pl: `add_pattern("ANY", "[\\s\\S]*")
+grok(_, "^prefix:%{ANY:item}:suffix$")`,
+			outkey:   "item",
+			expected: "a:b",
+		},
+		{
+			name:     "greedydata_keeps_text_before_following_literal",
+			in:       "prefix=alpha beta suffix=ok",
+			pl:       `grok(_, "^prefix=%{GREEDYDATA:item} suffix=%{WORD:tail}$")`,
+			outkey:   "item",
+			expected: "alpha beta",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			runner, err := NewTestingRunner(tc.pl)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			pt := ptinput.NewPlPt(
+				point.Logging, "test", nil, map[string]any{"message": tc.in}, time.Now())
+			if errR := runScript(runner, pt); errR != nil {
+				t.Fatal(errR.Error())
+			}
+
+			v, _, err := pt.Get(tc.outkey)
+			if err != nil {
+				t.Fatal(err)
+			}
+			tu.Equals(t, tc.expected, v)
+		})
+	}
+}
