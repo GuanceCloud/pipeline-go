@@ -92,6 +92,211 @@ func TestJSON(t *testing.T) {
 			expected: "not_space",
 		},
 		{
+			name:     "path_with_dot_in_key",
+			in:       `{"a.b": 123}`,
+			script:   "json(_, `a.b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "path_with_numeric_key",
+			in:       `{"0": 123}`,
+			script:   "json(_, `0`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "duplicate_key_uses_last_value",
+			in:       `{"a": 1, "a": 2}`,
+			script:   "json(_, a, out)",
+			key:      "out",
+			expected: float64(2),
+		},
+		{
+			name:     "nested_duplicate_key_uses_last_value",
+			in:       `{"root": {"a": 1, "a": 2}}`,
+			script:   "json(_, root.a, out)",
+			key:      "out",
+			expected: float64(2),
+		},
+		{
+			name:     "path_with_wildcard_in_key",
+			in:       `{"a*b": 123}`,
+			script:   "json(_, `a*b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "path_with_question_in_key",
+			in:       `{"a?b": 123}`,
+			script:   "json(_, `a?b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "path_with_array_count_in_key",
+			in:       `{"a#b": 123}`,
+			script:   "json(_, `a#b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "path_with_pipe_in_key",
+			in:       `{"a|b": 123}`,
+			script:   "json(_, `a|b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "path_with_backslash_in_key",
+			in:       `{"a\\b": 123}`,
+			script:   "json(_, `a\\b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "path_with_modifier_name_in_key",
+			in:       `{"@this": 123}`,
+			script:   "json(_, `@this`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "path_with_static_prefix_in_key",
+			in:       `{"!foo": 123}`,
+			script:   "json(_, `!foo`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "path_with_multipath_prefix_in_key",
+			in:       `{"[key": 123}`,
+			script:   "json(_, `[key`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "path_with_object_multipath_prefix_in_key",
+			in:       `{"{key": 123}`,
+			script:   "json(_, `{key`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_multipath_prefix_in_key",
+			in:       `{"root": {"[key": 123}}`,
+			script:   "json(_, root.`[key`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_object_multipath_prefix_in_key",
+			in:       `{"root": {"{key": 123}}`,
+			script:   "json(_, root.`{key`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_dot_in_key",
+			in:       `{"root": {"a.b": 123}}`,
+			script:   "json(_, root.`a.b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_wildcard_in_key",
+			in:       `{"root": {"a*b": 123}}`,
+			script:   "json(_, root.`a*b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_question_in_key",
+			in:       `{"root": {"a?b": 123}}`,
+			script:   "json(_, root.`a?b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_array_count_in_key",
+			in:       `{"root": {"a#b": 123}}`,
+			script:   "json(_, root.`a#b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_pipe_in_key",
+			in:       `{"root": {"a|b": 123}}`,
+			script:   "json(_, root.`a|b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_backslash_in_key",
+			in:       `{"root": {"a\\b": 123}}`,
+			script:   "json(_, root.`a\\b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_modifier_name_in_key",
+			in:       `{"root": {"@this": 123}}`,
+			script:   "json(_, root.`@this`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "nested_path_with_static_prefix_in_key",
+			in:       `{"root": {"!foo": 123}}`,
+			script:   "json(_, root.`!foo`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "special_key_map_value",
+			in:       `{"a|b": {"inner": 123}}`,
+			script:   "json(_, `a|b`, out)",
+			key:      "out",
+			expected: `{"inner":123}`,
+		},
+		{
+			name:     "special_key_list_value",
+			in:       `{"a|b": [1, 2, 3]}`,
+			script:   "json(_, `a|b`, out)",
+			key:      "out",
+			expected: `[1,2,3]`,
+		},
+		{
+			name:     "special_key_then_index",
+			in:       `{"a|b": [1, 2, 3]}`,
+			script:   "json(_, `a|b`[1], out)",
+			key:      "out",
+			expected: float64(2),
+		},
+		{
+			name:     "index_then_special_key",
+			in:       `[{"a|b": 123}]`,
+			script:   "json(_, .[0].`a|b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name:     "negative_index_then_special_key",
+			in:       `[{"a|b": 123}]`,
+			script:   "json(_, .[-1].`a|b`, out)",
+			key:      "out",
+			expected: float64(123),
+		},
+		{
+			name: "source_replaced_between_json_calls",
+			in:   `{"a":{"first":1}}`,
+			script: `json(_, a.first, first)
+			add_key("message", "{\"a\":{\"second\":2}}")
+			json(_, a.second, second)`,
+			key:      "second",
+			expected: float64(2),
+		},
+		{
 			name:     "map_delete_after",
 			in:       `{"item": " not_space "}`,
 			script:   `json(_, item, item, true, true)`,
@@ -159,5 +364,85 @@ func TestJSON(t *testing.T) {
 
 			t.Logf("[%d] PASS", idx)
 		})
+	}
+}
+
+func TestJSONIndexDoesNotMatchObjectNumericKey(t *testing.T) {
+	runner, err := NewTestingRunner(`json(_, .[0], out)`)
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": `{"0":123}`}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	_, _, err = pt.Get("out")
+	assert.Error(t, err)
+}
+
+func TestJSONNumericKeyDoesNotMatchArrayIndex(t *testing.T) {
+	runner, err := NewTestingRunner("json(_, `0`, out)")
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": `[123]`}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	_, _, err = pt.Get("out")
+	assert.Error(t, err)
+}
+
+func BenchmarkJSON(b *testing.B) {
+	runner, err := NewTestingRunner(`json(_, friends)
+json(friends, .[1].first, f_first)`)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	in := `{
+	  "name": {"first": "Tom", "last": "Anderson"},
+	  "age":37,
+	  "children": ["Sara","Alex","Jack"],
+	  "fav.movie": "Deer Hunter",
+	  "friends": [
+	    {"first": "Dale", "last": "Murphy", "age": 44, "nets": ["ig", "fb", "tw"]},
+	    {"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]},
+	    {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
+	  ]
+	}`
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		pt := ptinput.NewPlPt(
+			point.Logging, "test", nil, map[string]any{"message": in}, time.Now())
+		if err := runScript(runner, pt); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkJSONRepeatedSource(b *testing.B) {
+	runner, err := NewTestingRunner(`json(_, a.first, first)
+json(_, a.second, second)
+json(_, a.third, third)
+json(_, a.forth, forth)`)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	in := `{"a":{"first": 2.3, "second":2,"third":"aBC","forth":true},"age":47}`
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		pt := ptinput.NewPlPt(
+			point.Logging, "test", nil, map[string]any{"message": in}, time.Now())
+		if err := runScript(runner, pt); err != nil {
+			b.Fatal(err)
+		}
 	}
 }

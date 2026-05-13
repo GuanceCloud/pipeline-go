@@ -6,6 +6,7 @@
 package funcs
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
@@ -303,4 +304,68 @@ func TestPtKvsGetComposite(t *testing.T) {
 			assert.Equal(t, tc.expect, v)
 		})
 	}
+}
+
+func TestPtKvsKeysSkipsNonStringTag(t *testing.T) {
+	raw := point.NewPoint("test",
+		point.KVs{
+			point.NewKV("bad_tag", int64(1), point.WithKVTagSet(true)),
+			point.NewKV("good_tag", "x", point.WithKVTagSet(true)),
+			point.NewKV("field", int64(1)),
+		},
+		point.DefaultLoggingOptions()...)
+	pt := ptinput.PtWrap(point.Logging, raw)
+
+	assert.ElementsMatch(t, stringMapKeysAny(pt.Tags()), ptKvsKeyList(pt, true, false))
+	assert.ElementsMatch(t, anyMapKeysAny(pt.Fields()), ptKvsKeyList(pt, false, true))
+}
+
+func stringMapKeysAny(m map[string]string) []any {
+	keys := make([]any, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func anyMapKeysAny(m map[string]any) []any {
+	keys := make([]any, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func BenchmarkPtKvsKeys(b *testing.B) {
+	runner, err := NewTestingRunner(`
+keys = pt_kvs_keys(tags=true, fields=true)
+if len(keys) == 0 {
+	pt_kvs_set("empty", true)
+}
+`)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	pt := newBenchmarkPtKvsPoint(12, 80)
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if err := runScript(runner, pt); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func newBenchmarkPtKvsPoint(tagCount, fieldCount int) ptinput.PlInputPt {
+	tags := make(map[string]string, tagCount)
+	fields := make(map[string]any, fieldCount+1)
+	fields["message"] = "bench message"
+	for i := 0; i < tagCount; i++ {
+		tags["tag_"+strconv.Itoa(i)] = "value_" + strconv.Itoa(i)
+	}
+	for i := 0; i < fieldCount; i++ {
+		fields["field_"+strconv.Itoa(i)] = int64(i)
+	}
+	return ptinput.NewPlPt(point.Logging, "bench", tags, fields, time.Now())
 }
