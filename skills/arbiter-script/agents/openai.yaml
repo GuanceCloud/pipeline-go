@@ -1,0 +1,4 @@
+interface:
+  display_name: "Arbiter Script"
+  short_description: "Create and validate SIEM/CSPM Arbiter scripts"
+  default_prompt: "Use $arbiter-script to create an Arbiter detection script, validate it, and show trigger output."

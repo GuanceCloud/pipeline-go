@@ -1,51 +1,132 @@
-name: Build Cross Platform Executables
+name: Build Static Multi-Arch Binaries
 
 on:
+  pull_request:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [main]
+    tags: ["v*"]
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    if: startsWith(github.ref, 'refs/tags/v')
-    name: Build for ${{ matrix.os }}/${{ matrix.arch }}
+  test:
+    name: Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        os: [ linux, windows, darwin ]
-        arch: [ amd64, arm64 ]
-
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.19.13'
+          go-version: "1.19.13"
+          cache: true
 
-      - name: Build executable
-        env:
-          CGO_ENABLED: 0
-          GOOS: ${{ matrix.os }}
-          GOARCH: ${{ matrix.arch }}
-          GOEXE: ${{ matrix.os == 'windows' && '.exe' || '' }}
+      - name: Run focused tests
+        run: |
+          go test ./internal/command/pipelinecheck ./internal/command/arbitercheck ./cmd/pipeline-go ./cmd/pipeline-check ./cmd/arbiter-check ./cmd/arbiter
+
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    runs-on: ubuntu-latest
+    needs: test
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            ext: ""
+          - goos: linux
+            goarch: arm64
+            ext: ""
+          - goos: darwin
+            goarch: amd64
+            ext: ""
+          - goos: darwin
+            goarch: arm64
+            ext: ""
+          - goos: windows
+            goarch: amd64
+            ext: ".exe"
+          - goos: windows
+            goarch: arm64
+            ext: ".exe"
+
+    env:
+      CGO_ENABLED: "0"
+      GOOS: ${{ matrix.goos }}
+      GOARCH: ${{ matrix.goarch }}
+      BIN_NAME: pipeline-go-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}
+      SKILL_ARCHIVE: pipeline-go-skills-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz
+      LDFLAGS: "-s -w -extldflags=-static"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.19.13"
+          cache: true
+
+      - name: Build static binary
         run: |
           mkdir -p dist
-          go build -o dist/arbiter-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }} \
-            -ldflags="-s -w" \
-            ./cmd/arbiter
-          if [ "${{ matrix.os }}" != "windows" ]; then
-            chmod +x dist/arbiter-${{ matrix.os }}-${{ matrix.arch }}
-          fi
+          go build \
+            -trimpath \
+            -buildvcs=false \
+            -tags "netgo osusergo" \
+            -ldflags "$LDFLAGS" \
+            -o "dist/$BIN_NAME" \
+            ./cmd/pipeline-go
 
-      - name: Upload to Release
-        uses: softprops/action-gh-release@v1
+      - name: Verify Linux binary is static
+        if: matrix.goos == 'linux'
+        run: |
+          file "dist/$BIN_NAME"
+          file "dist/$BIN_NAME" | grep -q "statically linked"
+
+      - name: Package skills with binary
+        run: |
+          rm -rf dist/skills
+          mkdir -p dist/skills
+          cp -a skills/pipeline-script dist/skills/
+          cp -a skills/arbiter-script dist/skills/
+          cp -a skills/dql dist/skills/
+          rm -rf dist/skills/dql/bin/.cache
+          rm -f dist/skills/pipeline-script/bin/pipeline-go dist/skills/pipeline-script/bin/pipeline-go.exe
+          rm -f dist/skills/arbiter-script/bin/pipeline-go dist/skills/arbiter-script/bin/pipeline-go.exe
+          cp "dist/$BIN_NAME" "dist/skills/pipeline-script/bin/pipeline-go${{ matrix.ext }}"
+          cp "dist/$BIN_NAME" "dist/skills/arbiter-script/bin/pipeline-go${{ matrix.ext }}"
+          tar -czf "dist/$SKILL_ARCHIVE" -C dist/skills .
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: dist/arbiter-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '.exe' || '' }}
+          name: ${{ env.BIN_NAME }}
+          path: dist/${{ env.BIN_NAME }}
+          if-no-files-found: error
+
+      - name: Upload skill artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.SKILL_ARCHIVE }}
+          path: dist/${{ env.SKILL_ARCHIVE }}
+          if-no-files-found: error
+
+      - name: Upload release asset
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/${{ env.BIN_NAME }}
+            dist/${{ env.SKILL_ARCHIVE }}
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

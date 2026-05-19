@@ -1,0 +1,4 @@
+interface:
+  display_name: "DQL"
+  short_description: "Generate and validate GuanceCloud DQL"
+  default_prompt: "Use $dql to generate or fix this DQL, validate each query with dqlcheck, and return only passing DQL."

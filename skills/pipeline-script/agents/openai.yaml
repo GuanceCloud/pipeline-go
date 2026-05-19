@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pipeline Script"
+  short_description: "Create and validate pipeline .p scripts"
+  default_prompt: "Use $pipeline-script to create a pipeline script from this sample message, validate it, and show the extracted fields."
