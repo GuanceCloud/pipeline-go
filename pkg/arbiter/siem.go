@@ -41,6 +41,12 @@ func WithDQLOpenAPI(endpoint string, apikey string, timeRange []int64) Opt {
 	}
 }
 
+func WithDQLClient(cli dql.DQL) Opt {
+	return func(c *Config) {
+		c.Private[funcs.PDQLCli] = cli
+	}
+}
+
 func WithStdout(writer io.Writer) Opt {
 	return func(c *Config) {
 		c.Private[funcs.PStdout] = writer

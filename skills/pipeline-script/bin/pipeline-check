@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+set -eu
+
+BASE_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+REPO_ROOT="$(CDPATH= cd -- "$BASE_DIR/../../.." 2>/dev/null && pwd || true)"
+
+if [ -x "$BASE_DIR/pipeline-go" ]; then
+  exec "$BASE_DIR/pipeline-go" pipeline check "$@"
+fi
+
+if [ -x "$BASE_DIR/pipeline-go.exe" ]; then
+  exec "$BASE_DIR/pipeline-go.exe" pipeline check "$@"
+fi
+
+if [ -n "$REPO_ROOT" ] && [ -d "$REPO_ROOT/cmd/pipeline-go" ]; then
+  exec go run "$REPO_ROOT/cmd/pipeline-go" pipeline check "$@"
+fi
+
+if command -v pipeline-go >/dev/null 2>&1; then
+  exec pipeline-go pipeline check "$@"
+fi
+
+printf '%s\n' "missing pipeline-go binary: put it at $BASE_DIR/pipeline-go, run from the pipeline-go repo, or install pipeline-go in PATH" >&2
+exit 1
