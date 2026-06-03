@@ -232,6 +232,71 @@ grok(_, "%{IPORHOST:client_ip} %{NOTSPACE:http_ident} %{NOTSPACE:http_auth} \\[%
 	}
 }
 
+const istioAccessLog = `[2026-06-02T23:51:30.123Z] "GET /api/v1/query?x=1 HTTP/1.1" 200 - via_upstream - "-" 0 1234 12 11 "10.1.1.1,10.2.2.2" "curl/8.0" "9b3c6f2a-1b90-4e4f-b7b0-8d1d5f1a0001" "example.com" "10.0.0.1:8080" outbound|8080||svc.ns.svc.cluster.local 10.10.0.1:443 10.10.0.2:8443 10.10.0.3:55555 - default`
+
+func BenchmarkGrokIstioAccessRiskPattern(b *testing.B) {
+	script := `
+grok(_, "\\[%{TIMESTAMP_ISO8601:start_time}\\] \"%{GREEDYDATA:http_method} %{GREEDYDATA:http_path} %{GREEDYDATA:protocol}\" %{GREEDYDATA:response_code} %{GREEDYDATA:response_flags} %{GREEDYDATA:response_code_details} %{GREEDYDATA:connection_termination_details} \"%{GREEDYDATA:upstream_transport_failure_reason}\" %{GREEDYDATA:bytes_received} %{GREEDYDATA:bytes_sent} %{GREEDYDATA:duration} %{GREEDYDATA:resp_upstream_service_time} \"%{GREEDYDATA:req_x_forwarded_for}\" \"%{GREEDYDATA:req_user_agent}\" \"%{GREEDYDATA:req_x_request_id}\" \"%{GREEDYDATA:req_authority}\" \"%{GREEDYDATA:upstream_host}\" %{GREEDYDATA:upstream_cluster} %{GREEDYDATA:upstream_local_address} %{GREEDYDATA:downstream_local_address} %{GREEDYDATA:downstream_remote_address} %{GREEDYDATA:requested_server_name} %{GREEDYDATA:route_name}")
+`
+	runner, err := NewTestingRunner(script)
+	if err != nil {
+		b.Fatal(err)
+	}
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": istioAccessLog}, time.Now())
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		if errR := runScript(runner, pt); errR != nil {
+			b.Fatal(errR)
+		}
+	}
+}
+
+func BenchmarkGrokIstioAccessTightPattern(b *testing.B) {
+	script := `
+grok(_, "^\\[%{TIMESTAMP_ISO8601:start_time}\\] \"%{WORD:http_method} %{DATA:http_path} %{NOTSPACE:protocol}\" %{INT:response_code:int} %{NOTSPACE:response_flags} %{NOTSPACE:response_code_details} %{NOTSPACE:connection_termination_details} \"%{DATA:upstream_transport_failure_reason}\" %{INT:bytes_received:int} %{INT:bytes_sent:int} %{INT:duration:int} %{INT:resp_upstream_service_time:int} \"%{DATA:req_x_forwarded_for}\" \"%{DATA:req_user_agent}\" \"%{DATA:req_x_request_id}\" \"%{DATA:req_authority}\" \"%{DATA:upstream_host}\" %{NOTSPACE:upstream_cluster} %{NOTSPACE:upstream_local_address} %{NOTSPACE:downstream_local_address} %{NOTSPACE:downstream_remote_address} %{NOTSPACE:requested_server_name} %{DATA:route_name}$")
+`
+	runner, err := NewTestingRunner(script)
+	if err != nil {
+		b.Fatal(err)
+	}
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": istioAccessLog}, time.Now())
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		if errR := runScript(runner, pt); errR != nil {
+			b.Fatal(errR)
+		}
+	}
+}
+
+func BenchmarkGrokIstioAccessTightPatternObserver(b *testing.B) {
+	SetGrokRunObserver(func(info GrokRunInfo) {})
+	b.Cleanup(func() { SetGrokRunObserver(nil) })
+
+	script := `
+grok(_, "^\\[%{TIMESTAMP_ISO8601:start_time}\\] \"%{WORD:http_method} %{DATA:http_path} %{NOTSPACE:protocol}\" %{INT:response_code:int} %{NOTSPACE:response_flags} %{NOTSPACE:response_code_details} %{NOTSPACE:connection_termination_details} \"%{DATA:upstream_transport_failure_reason}\" %{INT:bytes_received:int} %{INT:bytes_sent:int} %{INT:duration:int} %{INT:resp_upstream_service_time:int} \"%{DATA:req_x_forwarded_for}\" \"%{DATA:req_user_agent}\" \"%{DATA:req_x_request_id}\" \"%{DATA:req_authority}\" \"%{DATA:upstream_host}\" %{NOTSPACE:upstream_cluster} %{NOTSPACE:upstream_local_address} %{NOTSPACE:downstream_local_address} %{NOTSPACE:downstream_remote_address} %{NOTSPACE:requested_server_name} %{DATA:route_name}$")
+`
+	runner, err := NewTestingRunner(script)
+	if err != nil {
+		b.Fatal(err)
+	}
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": istioAccessLog}, time.Now())
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		if errR := runScript(runner, pt); errR != nil {
+			b.Fatal(errR)
+		}
+	}
+}
+
 const lp = `gin app="deployment-forethought-kodo-kodo",client_ip="172.1***03",cluster_name_k8s="k8s-daily",container_id="dcbacc667c1534127d4f4c531fc26f613f4e6f822e646dee4e4bdbc5e87920c4",container_name="kodo",deployment="kodo",filepath="/rootfs/var/log/pods/forethought-kodo_kodo-7dc8b5c448-rmcpb_bd5159c7-df57-4346-987d-fc6883aeabea/kodo/0.log",test_site="daily",host="cluster_a_cn-hangzhou.172.1***.102",host_ip="172.1***.102",image="registry.****.com/ko**:testing-202*****",log_read_lines=289892,message="[GIN] 2024/11/15 - 10:56:07 | 403 | 759.859µs |  172.16.200.203 | POST    \"/v1/write/metric?token=****************842cda605c6cb87e3a7b8\"",message_length=137,namespace="forethought-kodo",pod-template-hash="7dc8b5c448",pod_ip="10.113.0.204",pod_name="kodo-7dc8b5c448-rmcpb",real_host="hz--daily-002",region="cn-hangzhou",service="kodo",status="warning",time_ns=1731639367526632400,time_us=1731639367526632,timestamp="2024/11/15 - 10:56:07",zone_id="cn-hangzhou-j" 1731639367526000000`
 
 func BenchmarkParseLogNginx(b *testing.B) {
