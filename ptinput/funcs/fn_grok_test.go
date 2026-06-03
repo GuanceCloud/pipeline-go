@@ -222,6 +222,53 @@ grok(_, "%{WORD:date} %{time}")`,
 	}
 }
 
+func TestGrokRunObserver(t *testing.T) {
+	events := make(chan GrokRunInfo, 1)
+	SetGrokRunObserver(func(info GrokRunInfo) {
+		events <- info
+	})
+	defer SetGrokRunObserver(nil)
+
+	runner, err := NewTestingRunner(`
+grok(_, "%{NOTSPACE:client_ip} %{NOTSPACE:http_ident} %{NOTSPACE:http_auth} \\[%{HTTPDATE:time}\\] \"%{DATA:http_method} %{GREEDYDATA:http_url} HTTP/%{NUMBER:http_version}\" %{INT:status_code} %{INT:bytes}")
+`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil,
+		map[string]any{"message": `127.0.0.1 - - [21/Jul/2021:14:14:38 +0800] "GET /?1 HTTP/1.1" 200 2178`},
+		time.Now())
+	if errR := runScript(runner, pt); errR != nil {
+		t.Fatal(errR)
+	}
+
+	select {
+	case info := <-events:
+		if info.ScriptName != "default.p" {
+			t.Fatalf("script name = %q", info.ScriptName)
+		}
+		if info.Line <= 0 || info.Column <= 0 {
+			t.Fatalf("expected positive source position, got line=%d column=%d", info.Line, info.Column)
+		}
+		if info.PatternHash == 0 {
+			t.Fatal("expected pattern hash")
+		}
+		if info.Path == "" {
+			t.Fatal("expected path")
+		}
+		if info.WorkUnits <= 0 {
+			t.Fatalf("expected positive work units, got %d", info.WorkUnits)
+		}
+		if info.Cost <= 0 {
+			t.Fatalf("expected positive cost, got %s", info.Cost)
+		}
+	default:
+		t.Fatal("expected grok observer event")
+	}
+}
+
 func TestGrokFastPathCompatibility(t *testing.T) {
 	cases := []struct {
 		name, pl, in string
