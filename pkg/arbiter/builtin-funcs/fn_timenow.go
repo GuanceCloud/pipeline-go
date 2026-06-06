@@ -6,8 +6,10 @@
 package funcs
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/dql"
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtimev2"
 	"github.com/GuanceCloud/platypus/pkg/errchain"
@@ -15,7 +17,7 @@ import (
 
 var FnTimeNowDesc = runtimev2.FnDesc{
 	Name: "time_now",
-	Desc: "Get current timestamp with the specified precision.",
+	Desc: "Get the DQL query start timestamp with the specified precision.",
 	Params: []*runtimev2.Param{
 		{
 			Name: "precision",
@@ -26,7 +28,7 @@ var FnTimeNowDesc = runtimev2.FnDesc{
 	},
 	Returns: []*runtimev2.Param{
 		{
-			Desc: "Returns the current timestamp.",
+			Desc: "Returns the DQL query start timestamp.",
 			Typs: []ast.DType{ast.Int},
 		},
 	},
@@ -42,19 +44,41 @@ func FnTimenow(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		return err
 	}
 
-	var ts int64
+	start, err := dqlQueryStartTime(ctx, funcExpr)
+	if err != nil {
+		return err
+	}
+
 	switch precision {
 	case "us":
-		ts = time.Now().UnixMicro()
+		start *= int64(time.Millisecond / time.Microsecond)
 	case "ms":
-		ts = time.Now().UnixMilli()
 	case "s":
-		ts = time.Now().Unix()
+		start /= int64(time.Second / time.Millisecond)
 	default:
-		ts = time.Now().UnixNano()
+		start *= int64(time.Millisecond / time.Nanosecond)
 	}
 	ctx.Regs.ReturnAppend(
-		runtimev2.V{V: ts, T: ast.Int},
+		runtimev2.V{V: start, T: ast.Int},
 	)
 	return nil
+}
+
+func dqlQueryStartTime(ctx *runtimev2.Task, expr *ast.CallExpr) (int64, *errchain.PlError) {
+	v, ok := ctx.PValue(PDQLCli)
+	if !ok {
+		return 0, runtimev2.NewRunError(ctx, fmt.Sprintf(
+			"missing context data named %s", PDQLCli), expr.NamePos)
+	}
+	dqlCli, ok := v.(dql.DQL)
+	if !ok {
+		return 0, runtimev2.NewRunError(ctx, fmt.Sprintf(
+			"context data %s type is expected", PDQLCli), expr.NamePos)
+	}
+
+	r := dqlCli.TimeRange()
+	if len(r) == 2 {
+		return r[0], nil
+	}
+	return genTimeRange15min(time.Now().UnixMilli()), nil
 }

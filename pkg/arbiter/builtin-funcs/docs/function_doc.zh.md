@@ -1786,7 +1786,7 @@
 
 函数原型： `fn time_now(precision: str = "ns") -> int`
 
-函数描述： Get current timestamp with the specified precision.
+函数描述： Get the DQL query start timestamp with the specified precision.
 
 函数参数：
 
@@ -1795,7 +1795,7 @@
 
 函数返回值：
 
-- `int`: Returns the current timestamp.
+- `int`: Returns the DQL query start timestamp.
 
 
 函数示例：
@@ -1812,7 +1812,7 @@
     标准输出：
 
     ```txt
-    1745823860
+    1672531500
     ```
 
     
