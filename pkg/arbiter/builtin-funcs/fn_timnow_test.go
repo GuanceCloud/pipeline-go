@@ -6,44 +6,31 @@
 package funcs
 
 import (
-	"bytes"
-	"fmt"
-	"strconv"
 	"testing"
-	"time"
 
-	"github.com/GuanceCloud/platypus/pkg/engine"
+	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/dql"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtimev2"
 )
 
 func TestTimestamp(t *testing.T) {
 	cases := []ProgCase{
 		{
-			Name: "timenow",
-			Script: `printf("%v", time_now("s"))
+			Name: "time_now_returns_query_start",
+			Script: `printf("%v,%v,%v,%v", time_now("s"), time_now("ms"), time_now("us"), time_now("ns"))
 `,
-			Stdout: fmt.Sprintf("%d", time.Now().Unix()),
+			Stdout: "1672531500,1672531500123,1672531500123000,1672531500123000000",
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			s, err := engine.ParseV2(c.Name, c.Script, Funcs)
-			if err != nil {
-				t.Error(err)
-				return
-			}
-
-			var privateMap map[runtimev2.TaskP]any
-
-			stdout := bytes.NewBuffer([]byte{})
-			if err := s.Run(nil, runtimev2.WithPrivate(privateMap)); err != nil {
-				t.Error(err.Error())
-			}
-			aV, _ := strconv.ParseInt(stdout.String(), 10, 64)
-			eV, _ := strconv.ParseInt(c.Stdout, 10, 64)
-			if (aV - eV) > 2 {
-				t.Error("not equal")
-			}
+			runCase(t, c, map[runtimev2.TaskP]any{
+				PDQLCli: dql.NewDQLOpenAPI(
+					"",
+					dql.OpenAPIPath,
+					"abc",
+					[]int64{1672531500123, 1672532100123},
+				),
+			})
 		})
 	}
 }

@@ -1786,7 +1786,7 @@ Function examples:
 
 Function prototype: `fn time_now(precision: str = "ns") -> int`
 
-Function description: Get current timestamp with the specified precision.
+Function description: Get the DQL query start timestamp with the specified precision.
 
 Function parameters:
 
@@ -1795,7 +1795,7 @@ Function parameters:
 
 Function returns:
 
-- `int`: Returns the current timestamp.
+- `int`: Returns the DQL query start timestamp.
 
 
 Function examples:
@@ -1812,7 +1812,7 @@ Function examples:
     Standard output:
 
     ```txt
-    1745823860
+    1672531500
     ```
 
     
