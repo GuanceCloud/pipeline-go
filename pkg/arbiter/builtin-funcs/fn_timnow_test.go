@@ -24,9 +24,8 @@ func TestTimestamp(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
 			runCase(t, c, map[runtimev2.TaskP]any{
-				PDQLCli: dql.NewDQLOpenAPI(
+				PDQLCli: dql.NewDQLKodo(
 					"",
-					dql.OpenAPIPath,
 					"abc",
 					[]int64{1672531500123, 1672532100123},
 				),
