@@ -64,6 +64,40 @@ trigger(len(hosts), "high", {}, {"hosts": hosts})`,
 	if res.DQLMode != "mock" || res.DQLQueries[0].QType != "dql" || res.Triggers[0].Status != "high" {
 		t.Fatalf("unexpected execution result: %+v", res)
 	}
+	if !res.DQLQueries[0].AlignTime {
+		t.Fatalf("expected align_time to default true: %+v", res.DQLQueries[0])
+	}
+	if !res.DQLQueries[0].DisableSampling {
+		t.Fatalf("expected disable_sampling to default true: %+v", res.DQLQueries[0])
+	}
+}
+
+func TestRunMockDQLQueryFlagsFalse(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+
+	code := run([]string{
+		"--cmd", `data = dql("M::cpu", align_time=false, disable_sampling=false)
+trigger(1, "high", {}, {})`,
+		"--dql-result", `{"series":[],"status_code":200}`,
+		"--require-trigger",
+	}, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("exit code = %d, stderr = %s, stdout = %s", code, stderr.String(), stdout.String())
+	}
+
+	var res checkResult
+	if err := json.Unmarshal(stdout.Bytes(), &res); err != nil {
+		t.Fatal(err)
+	}
+	if len(res.DQLQueries) != 1 {
+		t.Fatalf("expected one DQL query: %+v", res.DQLQueries)
+	}
+	if res.DQLQueries[0].AlignTime {
+		t.Fatalf("expected align_time=false to be recorded: %+v", res.DQLQueries[0])
+	}
+	if res.DQLQueries[0].DisableSampling {
+		t.Fatalf("expected disable_sampling=false to be recorded: %+v", res.DQLQueries[0])
+	}
 }
 
 func TestRunChecksDQL(t *testing.T) {

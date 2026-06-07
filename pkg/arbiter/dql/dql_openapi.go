@@ -39,7 +39,7 @@ func NewDQLOpenAPI(endpoint, path, key string, timeRange []int64) *DQLCliOpenAPI
 	}
 }
 
-func (cli *DQLCliOpenAPI) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, uuids ...string) (map[string]any, error) {
+func (cli *DQLCliOpenAPI) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, alignTime, disableSampling bool, uuids ...string) (map[string]any, error) {
 	url := cli.URL
 	if url == "" {
 		return nil, fmt.Errorf("dql query url is empty")
@@ -47,9 +47,10 @@ func (cli *DQLCliOpenAPI) Query(pos token.LnColPos, q, qTyp string, limit, offse
 
 	query := map[string]any{
 		"q":                    q,
-		"disable_sampling":     true,
+		"disable_sampling":     disableSampling,
 		"limit":                limit,
 		"offset":               offset,
+		"alignTime":            alignTime,
 		"disableMultipleField": false,
 	}
 
