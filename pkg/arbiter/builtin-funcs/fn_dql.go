@@ -68,6 +68,22 @@ var FnDQLDesc = runtimev2.FnDesc{
 			},
 			Typs: []ast.DType{ast.String},
 		},
+		{
+			Name: "align_time",
+			Desc: "Align relative query time ranges before executing DQL. Defaults to true; set false to disable automatic alignment.",
+			Val: func() any {
+				return true
+			},
+			Typs: []ast.DType{ast.Bool},
+		},
+		{
+			Name: "disable_sampling",
+			Desc: "Disable DQL sampling. Defaults to true; set false to allow sampling.",
+			Val: func() any {
+				return true
+			},
+			Typs: []ast.DType{ast.Bool},
+		},
 	},
 	Returns: []*runtimev2.Param{
 		{
@@ -127,17 +143,30 @@ func FnDQL(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 		return err
 	}
 
+	alignTime, err := runtimev2.GetParamBool(ctx, expr, FnDQLDesc.Params, 7)
+	if err != nil {
+		return err
+	}
+
+	disableSampling, err := runtimev2.GetParamBool(ctx, expr, FnDQLDesc.Params, 8)
+	if err != nil {
+		return err
+	}
+
 	var uuids []string
 	if uuid != "" {
 		uuids = append(uuids, uuid)
 	}
 
-	if r, err := dqlCli.Query(expr.NamePos, query, qtype, limit,
-		offset, slimit, timeRange, uuids...); err != nil {
-		return runtimev2.NewRunError(ctx, err.Error(), expr.NamePos)
-	} else {
-		ctx.Regs.ReturnAppend(
-			runtimev2.V{V: r, T: ast.Map})
+	var r map[string]any
+	var qErr error
+	r, qErr = dqlCli.Query(expr.NamePos, query, qtype, limit,
+		offset, slimit, timeRange, alignTime, disableSampling, uuids...)
+
+	if qErr != nil {
+		return runtimev2.NewRunError(ctx, qErr.Error(), expr.NamePos)
 	}
+	ctx.Regs.ReturnAppend(
+		runtimev2.V{V: r, T: ast.Map})
 	return nil
 }

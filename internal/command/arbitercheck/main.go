@@ -64,13 +64,15 @@ type checkResult struct {
 }
 
 type dqlCall struct {
-	Query         string   `json:"query"`
-	QType         string   `json:"qtype"`
-	Limit         int64    `json:"limit"`
-	Offset        int64    `json:"offset"`
-	SLimit        int64    `json:"slimit"`
-	TimeRange     []any    `json:"time_range,omitempty"`
-	WorkspaceUUID []string `json:"workspace_uuid,omitempty"`
+	Query           string   `json:"query"`
+	QType           string   `json:"qtype"`
+	Limit           int64    `json:"limit"`
+	Offset          int64    `json:"offset"`
+	SLimit          int64    `json:"slimit"`
+	AlignTime       bool     `json:"align_time"`
+	DisableSampling bool     `json:"disable_sampling"`
+	TimeRange       []any    `json:"time_range,omitempty"`
+	WorkspaceUUID   []string `json:"workspace_uuid,omitempty"`
 }
 
 type dqlCheck struct {
@@ -477,15 +479,17 @@ func effectiveTimeRange(cfg config) ([]int64, error) {
 	return []int64{end - d.Milliseconds(), end}, nil
 }
 
-func (m *mockDQL) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, uuids ...string) (map[string]any, error) {
+func (m *mockDQL) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, alignTime, disableSampling bool, uuids ...string) (map[string]any, error) {
 	m.calls = append(m.calls, dqlCall{
-		Query:         q,
-		QType:         qTyp,
-		Limit:         limit,
-		Offset:        offset,
-		SLimit:        slimit,
-		TimeRange:     cloneAnySlice(timeRange),
-		WorkspaceUUID: append([]string{}, uuids...),
+		Query:           q,
+		QType:           qTyp,
+		Limit:           limit,
+		Offset:          offset,
+		SLimit:          slimit,
+		AlignTime:       alignTime,
+		DisableSampling: disableSampling,
+		TimeRange:       cloneAnySlice(timeRange),
+		WorkspaceUUID:   append([]string{}, uuids...),
 	})
 	return cloneAnyMap(m.result), nil
 }
@@ -504,17 +508,19 @@ func (m *mockDQL) Calls() []dqlCall {
 var _ dql.DQL = (*mockDQL)(nil)
 var _ recordedDQL = (*mockDQL)(nil)
 
-func (r *recordingDQL) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, uuids ...string) (map[string]any, error) {
+func (r *recordingDQL) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, alignTime, disableSampling bool, uuids ...string) (map[string]any, error) {
 	r.calls = append(r.calls, dqlCall{
-		Query:         q,
-		QType:         qTyp,
-		Limit:         limit,
-		Offset:        offset,
-		SLimit:        slimit,
-		TimeRange:     cloneAnySlice(timeRange),
-		WorkspaceUUID: append([]string{}, uuids...),
+		Query:           q,
+		QType:           qTyp,
+		Limit:           limit,
+		Offset:          offset,
+		SLimit:          slimit,
+		AlignTime:       alignTime,
+		DisableSampling: disableSampling,
+		TimeRange:       cloneAnySlice(timeRange),
+		WorkspaceUUID:   append([]string{}, uuids...),
 	})
-	return r.inner.Query(pos, q, qTyp, limit, offset, slimit, timeRange, uuids...)
+	return r.inner.Query(pos, q, qTyp, limit, offset, slimit, timeRange, alignTime, disableSampling, uuids...)
 }
 
 func (r *recordingDQL) TimeRange() []int64 {
