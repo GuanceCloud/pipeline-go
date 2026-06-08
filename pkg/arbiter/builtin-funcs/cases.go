@@ -333,6 +333,42 @@ printf("%v", {"host": hostLi, "time": time_li})
 		},
 	},
 }
+
+var _ = AddExps(cDQLSeriesFirst)
+var cDQLSeriesFirst = &FuncExample{
+	FnName: FnDQLSeriesFirstDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name: "dql_series_first",
+			Script: `v = dql("M::cpu limit 2 slimit 2")
+
+host = dql_series_first(v, "host")
+time = dql_series_first(v, "time")
+
+printf("%v", {"host": host, "time": time})
+`,
+			jsonout: true,
+			Stdout:  `{"host":"172.16.241.111","time":1744866108991}`,
+		},
+		{
+			Name: "dql_series_first_trigger_dimension_tags",
+			Script: `v = dql("M::cpu limit 1 slimit 1")
+
+host = dql_series_first(v, "host")
+trigger(host, "high", dimension_tags={"host": host}, related_data={})
+`,
+			TriggerResult: []trigger.Data{
+				{
+					Result:        "172.16.241.111",
+					Status:        "high",
+					DimensionTags: map[string]string{"host": "172.16.241.111"},
+					RelatedData:   map[string]any{},
+				},
+			},
+		},
+	},
+}
+
 var _ = AddExps(cDumpJSON)
 var cDumpJSON = &FuncExample{
 	FnName: FnDumpJSONDesc.Name,

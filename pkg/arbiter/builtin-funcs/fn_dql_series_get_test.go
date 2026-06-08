@@ -14,6 +14,7 @@ func TestFuncDQLSeries(t *testing.T) {
 	defer server.Close()
 	cases := []ProgCase{}
 	cases = append(cases, cDQLSeriesGet.Progs...)
+	cases = append(cases, cDQLSeriesFirst.Progs...)
 	for _, tc := range cases {
 		t.Run(tc.Name, func(t *testing.T) {
 			runCase(t, tc, map[runtimev2.TaskP]any{
