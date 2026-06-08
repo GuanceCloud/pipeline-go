@@ -7,29 +7,29 @@ package funcs
 
 import (
 	"testing"
-
-	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/dql"
-	"github.com/GuanceCloud/platypus/pkg/engine/runtimev2"
+	"time"
 )
 
 func TestTimestamp(t *testing.T) {
+	originTimeNow := timeNow
+	timeNow = func() time.Time {
+		return time.Unix(1672531500, 123456789)
+	}
+	defer func() {
+		timeNow = originTimeNow
+	}()
+
 	cases := []ProgCase{
 		{
-			Name: "time_now_returns_query_start",
+			Name: "time_now_returns_current_time",
 			Script: `printf("%v,%v,%v,%v", time_now("s"), time_now("ms"), time_now("us"), time_now("ns"))
 `,
-			Stdout: "1672531500,1672531500123,1672531500123000,1672531500123000000",
+			Stdout: "1672531500,1672531500123,1672531500123456,1672531500123456789",
 		},
 	}
 	for _, c := range cases {
 		t.Run(c.Name, func(t *testing.T) {
-			runCase(t, c, map[runtimev2.TaskP]any{
-				PDQLCli: dql.NewDQLKodo(
-					"",
-					"abc",
-					[]int64{1672531500123, 1672532100123},
-				),
-			})
+			runCase(t, c)
 		})
 	}
 }

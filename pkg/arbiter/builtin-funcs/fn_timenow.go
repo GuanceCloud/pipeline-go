@@ -6,18 +6,18 @@
 package funcs
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/GuanceCloud/pipeline-go/pkg/arbiter/dql"
 	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/GuanceCloud/platypus/pkg/engine/runtimev2"
 	"github.com/GuanceCloud/platypus/pkg/errchain"
 )
 
+var timeNow = time.Now
+
 var FnTimeNowDesc = runtimev2.FnDesc{
 	Name: "time_now",
-	Desc: "Get the DQL query start timestamp with the specified precision.",
+	Desc: "Get the current timestamp with the specified precision.",
 	Params: []*runtimev2.Param{
 		{
 			Name: "precision",
@@ -28,7 +28,7 @@ var FnTimeNowDesc = runtimev2.FnDesc{
 	},
 	Returns: []*runtimev2.Param{
 		{
-			Desc: "Returns the DQL query start timestamp.",
+			Desc: "Returns the current timestamp.",
 			Typs: []ast.DType{ast.Int},
 		},
 	},
@@ -44,41 +44,22 @@ func FnTimenow(ctx *runtimev2.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		return err
 	}
 
-	start, err := dqlQueryStartTime(ctx, funcExpr)
-	if err != nil {
-		return err
-	}
-
-	switch precision {
-	case "us":
-		start *= int64(time.Millisecond / time.Microsecond)
-	case "ms":
-	case "s":
-		start /= int64(time.Second / time.Millisecond)
-	default:
-		start *= int64(time.Millisecond / time.Nanosecond)
-	}
 	ctx.Regs.ReturnAppend(
-		runtimev2.V{V: start, T: ast.Int},
+		runtimev2.V{V: currentTimestamp(precision), T: ast.Int},
 	)
 	return nil
 }
 
-func dqlQueryStartTime(ctx *runtimev2.Task, expr *ast.CallExpr) (int64, *errchain.PlError) {
-	v, ok := ctx.PValue(PDQLCli)
-	if !ok {
-		return 0, runtimev2.NewRunError(ctx, fmt.Sprintf(
-			"missing context data named %s", PDQLCli), expr.NamePos)
+func currentTimestamp(precision string) int64 {
+	now := timeNow()
+	switch precision {
+	case "s":
+		return now.Unix()
+	case "ms":
+		return now.UnixMilli()
+	case "us":
+		return now.UnixMicro()
+	default:
+		return now.UnixNano()
 	}
-	dqlCli, ok := v.(dql.DQL)
-	if !ok {
-		return 0, runtimev2.NewRunError(ctx, fmt.Sprintf(
-			"context data %s type is expected", PDQLCli), expr.NamePos)
-	}
-
-	r := dqlCli.TimeRange()
-	if len(r) == 2 {
-		return r[0], nil
-	}
-	return genTimeRange15min(time.Now().UnixMilli()), nil
 }

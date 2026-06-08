@@ -933,12 +933,6 @@ var cTimeNow = &FuncExample{
 			Script: `printf("%v", time_now("s"))
 `,
 			Stdout: "1672531500",
-			privateData: map[string]any{
-				"time_range": []int64{
-					1672531500000,
-					1672532100000,
-				},
-			},
 		},
 	},
 }
