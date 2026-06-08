@@ -48,6 +48,11 @@ var Funcs = map[string]*runtimev2.Fn{
 		Call:      FnDQLSeriesGet,
 		Desc:      FnDQLSeriesGetDesc,
 	},
+	FnDQLSeriesFirstDesc.Name: {
+		CallCheck: FnDQLSeriesFirstCheck,
+		Call:      FnDQLSeriesFirst,
+		Desc:      FnDQLSeriesFirstDesc,
+	},
 	FnDQLTimerangeGetDesc.Name: {
 		CallCheck: FnDQLTimerangeGetCheck,
 		Call:      FnDQLTimerangeGet,

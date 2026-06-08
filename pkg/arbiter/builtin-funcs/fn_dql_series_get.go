@@ -29,8 +29,35 @@ var FnDQLSeriesGetDesc = runtimev2.FnDesc{
 	},
 }
 
+var FnDQLSeriesFirstDesc = runtimev2.FnDesc{
+	Name: "dql_series_first",
+	Desc: "get the first column or tag value from series data",
+	Params: []*runtimev2.Param{
+		{
+			Name: "series",
+			Desc: "dql query result",
+			Typs: []ast.DType{ast.Map},
+		},
+		{
+			Name: "name",
+			Desc: "column or tag name",
+			Typs: []ast.DType{ast.String},
+		},
+	},
+	Returns: []*runtimev2.Param{
+		{
+			Desc: "first specified column or tag value for the series",
+			Typs: []ast.DType{ast.Bool, ast.Int, ast.Float, ast.String, ast.List, ast.Map, ast.Nil},
+		},
+	},
+}
+
 func FnDQLSeriesGetCheck(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 	return runtimev2.CheckPassParam(ctx, expr, FnDQLSeriesGetDesc.Params)
+}
+
+func FnDQLSeriesFirstCheck(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
+	return runtimev2.CheckPassParam(ctx, expr, FnDQLSeriesFirstDesc.Params)
 }
 
 func FnDQLSeriesGet(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
@@ -43,6 +70,32 @@ func FnDQLSeriesGet(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 		return err
 	}
 
+	ctx.Regs.ReturnAppend(runtimev2.V{T: ast.List, V: dqlSeriesValues(dqlResult, name)})
+
+	return nil
+}
+
+func FnDQLSeriesFirst(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
+	dqlResult, err := runtimev2.GetParamMap(ctx, expr, FnDQLSeriesFirstDesc.Params, 0)
+	if err != nil {
+		return err
+	}
+	name, err := runtimev2.GetParamString(ctx, expr, FnDQLSeriesFirstDesc.Params, 1)
+	if err != nil {
+		return err
+	}
+
+	v := dqlSeriesFirstValue(dqlResult, name)
+	v, typ := ast.DectDataType(v)
+	if typ == ast.Invalid {
+		v, typ = nil, ast.Nil
+	}
+	ctx.Regs.ReturnAppend(runtimev2.V{T: typ, V: v})
+
+	return nil
+}
+
+func dqlSeriesValues(dqlResult map[string]any, name string) []any {
 	vecVec := []any{}
 
 	tagOrCol := -1
@@ -97,8 +150,16 @@ func FnDQLSeriesGet(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 		vecVec = append(vecVec, vec)
 	}
 
-	ctx.Regs.ReturnAppend(runtimev2.V{T: ast.List, V: vecVec})
+	return vecVec
+}
 
+func dqlSeriesFirstValue(dqlResult map[string]any, name string) any {
+	for _, vec := range dqlSeriesValues(dqlResult, name) {
+		values := getList(vec)
+		if len(values) > 0 {
+			return values[0]
+		}
+	}
 	return nil
 }
 

@@ -465,6 +465,81 @@ Function examples:
 
     
 
+## `dql_series_first` {#fn-dql_series_first}
+
+Function prototype: `fn dql_series_first(series: map, name: str) -> bool|int|float|str|list|map|nil`
+
+Function description: get the first column or tag value from series data
+
+Function parameters:
+
+- `series`: dql query result
+- `name`: column or tag name
+
+
+Function returns:
+
+- `bool|int|float|str|list|map|nil`: first specified column or tag value for the series
+
+
+Function examples:
+
+* Case 0:
+
+    Script content:
+
+    ```txt
+    v = dql("M::cpu limit 2 slimit 2")
+    
+    host = dql_series_first(v, "host")
+    time = dql_series_first(v, "time")
+    
+    printf("%v", {"host": host, "time": time})
+    
+    ```
+
+    Standard output:
+
+    ```txt
+    {"host":"172.16.241.111","time":1744866108991}
+    ```
+
+    
+* Case 1:
+
+    Script content:
+
+    ```txt
+    v = dql("M::cpu limit 1 slimit 1")
+    
+    host = dql_series_first(v, "host")
+    trigger(host, "high", dimension_tags={"host": host}, related_data={})
+    
+    ```
+
+    Standard output:
+
+    ```txt
+    
+    ```
+
+    
+    Trigger output:
+    ```json
+    [
+        {
+            "result": "172.16.241.111",
+            "status": "high",
+            "dimension_tags": {
+                "host": "172.16.241.111"
+            },
+            "related_data": {},
+            "check_workspace_uuid": ""
+        }
+    ]
+    
+    ```
+
 ## `dql_series_get` {#fn-dql_series_get}
 
 Function prototype: `fn dql_series_get(series: map, name: str) -> list`
