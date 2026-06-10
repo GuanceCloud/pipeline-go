@@ -8,10 +8,9 @@ package funcs
 import (
 	"fmt"
 	"regexp"
-	"sort"
 	"strconv"
 
-	"github.com/goccy/go-json"
+	"github.com/tidwall/gjson"
 
 	"github.com/GuanceCloud/pipeline-go/ptinput"
 	"github.com/GuanceCloud/platypus/pkg/ast"
@@ -125,10 +124,8 @@ func JSONAll(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		l.Debug(err)
 		return nil
 	}
-
-	var data any
-	if err := json.Unmarshal([]byte(cont), &data); err != nil {
-		l.Debug(err)
+	if !gjson.Valid(cont) {
+		l.Debug("invalid json")
 		return nil
 	}
 
@@ -138,7 +135,7 @@ func JSONAll(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		keyPatterns:   keyPatterns,
 		filterInclude: filterInclude,
 	}
-	state.walk(data, "")
+	state.walkGJSON(gjson.Parse(cont))
 
 	return nil
 }
@@ -288,37 +285,27 @@ type jsonAllWalkState struct {
 	filterInclude bool
 }
 
-func (s *jsonAllWalkState) walk(v any, path string) bool {
-	if path != "" {
-		return s.add(path, v)
+func (s *jsonAllWalkState) walkGJSON(root gjson.Result) {
+	if root.Type != gjson.JSON {
+		return
 	}
 
-	switch v := v.(type) {
-	case map[string]any:
-		keys := make([]string, 0, len(v))
-		for key := range v {
-			keys = append(keys, key)
-		}
-		sort.Strings(keys)
-
-		for _, key := range keys {
-			if !s.add(key, v[key]) {
-				return false
-			}
-		}
-	case []any:
-		for i, elem := range v {
-			if !s.add(jsonAllArrayIndex(i), elem) {
-				return false
-			}
-		}
-	default:
-		return s.add(path, v)
+	rootIsArray := root.IsArray()
+	rootIsObject := root.IsObject()
+	if !rootIsArray && !rootIsObject {
+		return
 	}
-	return true
+
+	root.ForEach(func(key, value gjson.Result) bool {
+		path := key.String()
+		if rootIsArray {
+			path = jsonAllArrayIndex(int(key.Int()))
+		}
+		return s.add(path, value)
+	})
 }
 
-func (s *jsonAllWalkState) add(path string, v any) bool {
+func (s *jsonAllWalkState) add(path string, value gjson.Result) bool {
 	if path == "" {
 		return true
 	}
@@ -329,7 +316,7 @@ func (s *jsonAllWalkState) add(path string, v any) bool {
 		}
 	}
 
-	dtype, ok := jsonAllDType(v)
+	v, dtype, ok := jsonAllValue(value)
 	if !ok {
 		return true
 	}
@@ -350,16 +337,16 @@ func (s *jsonAllWalkState) match(path string) bool {
 	return false
 }
 
-func jsonAllDType(v any) (ast.DType, bool) {
-	switch v.(type) {
-	case bool:
-		return ast.Bool, true
-	case float64:
-		return ast.Float, true
-	case string:
-		return ast.String, true
+func jsonAllValue(value gjson.Result) (any, ast.DType, bool) {
+	switch value.Type {
+	case gjson.True, gjson.False:
+		return value.Bool(), ast.Bool, true
+	case gjson.Number:
+		return value.Float(), ast.Float, true
+	case gjson.String:
+		return value.String(), ast.String, true
 	default:
-		return ast.Invalid, false
+		return nil, ast.Invalid, false
 	}
 }
 

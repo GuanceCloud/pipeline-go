@@ -354,6 +354,58 @@ pt_kvs_set("count", count)
 	assert.Equal(t, int64(0), v)
 }
 
+func TestPtKvsSetMapDuplicateIncludeKeys(t *testing.T) {
+	runner, err := NewTestingRunner(`
+fields = {"a": 1}
+count = pt_kvs_set_map(fields, include_keys=["a", "a"])
+pt_kvs_set("count", count)
+`)
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": "test"}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	v, _, err := pt.Get("a")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), v)
+
+	v, _, err = pt.Get("count")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), v)
+}
+
+func TestPtKvsSetMapDynamicIncludeKeys(t *testing.T) {
+	runner, err := NewTestingRunner(`
+fields = {"a": 1, "b": 2}
+keys = ["b"]
+count = pt_kvs_set_map(fields, include_keys=keys)
+pt_kvs_set("count", count)
+`)
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": "test"}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	_, _, err = pt.Get("a")
+	assert.Error(t, err)
+
+	v, _, err := pt.Get("b")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(2), v)
+
+	v, _, err = pt.Get("count")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(1), v)
+}
+
 func TestPtKvsSetMapRawAndTag(t *testing.T) {
 	runner, err := NewTestingRunner(`
 fields = {"obj": {"a": 1}, "nums": [1, 2], "tag": 3}
