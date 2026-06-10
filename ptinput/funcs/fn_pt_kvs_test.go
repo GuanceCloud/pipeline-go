@@ -12,6 +12,7 @@ import (
 
 	"github.com/GuanceCloud/cliutils/point"
 	"github.com/GuanceCloud/pipeline-go/ptinput"
+	"github.com/GuanceCloud/platypus/pkg/ast"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -257,6 +258,142 @@ func TestPtKvsSet(t *testing.T) {
 
 		})
 	}
+}
+
+func TestPtKvsSetMapIncludeKeysAndWildcard(t *testing.T) {
+	runner, err := NewTestingRunner(`
+fields = {
+	"service": "api",
+	"status": 200,
+	"trace_id": "abc",
+	"trace_span": "def",
+	"literal_*": "literal",
+	"drop": "x",
+}
+count = pt_kvs_set_map(fields, include_keys=["literal_*", "service"], key_patterns=["trace_*"])
+pt_kvs_set("count", count)
+`)
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": "test"}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	v, _, err := pt.Get("service")
+	assert.NoError(t, err)
+	assert.Equal(t, "api", v)
+
+	v, _, err = pt.Get("trace_id")
+	assert.NoError(t, err)
+	assert.Equal(t, "abc", v)
+
+	v, _, err = pt.Get("literal_*")
+	assert.NoError(t, err)
+	assert.Equal(t, "literal", v)
+
+	v, _, err = pt.Get("count")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(4), v)
+
+	v, _, err = pt.Get("trace_span")
+	assert.NoError(t, err)
+	assert.Equal(t, "def", v)
+
+	_, _, err = pt.Get("drop")
+	assert.Error(t, err)
+}
+
+func TestPtKvsSetMapWithoutKeysDoesNothing(t *testing.T) {
+	runner, err := NewTestingRunner(`
+fields = {"c": 3, "a": 1, "b": 2}
+count = pt_kvs_set_map(fields)
+pt_kvs_set("count", count)
+`)
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": "test"}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	for _, key := range []string{"a", "b", "c"} {
+		_, _, err := pt.Get(key)
+		assert.Error(t, err)
+	}
+
+	v, _, err := pt.Get("count")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), v)
+}
+
+func TestPtKvsSetMapEmptyIncludeKeys(t *testing.T) {
+	runner, err := NewTestingRunner(`
+fields = {"a": 1}
+count = pt_kvs_set_map(fields, include_keys=[])
+pt_kvs_set("count", count)
+`)
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": "test"}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	_, _, err = pt.Get("a")
+	assert.Error(t, err)
+
+	v, _, err := pt.Get("count")
+	assert.NoError(t, err)
+	assert.Equal(t, int64(0), v)
+}
+
+func TestPtKvsSetMapRawAndTag(t *testing.T) {
+	runner, err := NewTestingRunner(`
+fields = {"obj": {"a": 1}, "nums": [1, 2], "tag": 3}
+pt_kvs_set_map(fields, include_keys=["obj", "nums"], raw=true)
+pt_kvs_set_map(fields, include_keys=["tag"], as_tag=true)
+`)
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil, map[string]any{"message": "test"}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	v, dt, err := pt.GetRaw("obj")
+	assert.NoError(t, err)
+	assert.Equal(t, ast.Map, dt)
+	assert.Equal(t, map[string]any{"a": int64(1)}, v)
+
+	v, dt, err = pt.GetRaw("nums")
+	assert.NoError(t, err)
+	assert.Equal(t, ast.List, dt)
+	assert.Equal(t, []any{int64(1), int64(2)}, v)
+
+	v, _, err = pt.Get("tag")
+	assert.NoError(t, err)
+	assert.Equal(t, "3", v)
+	assert.Equal(t, "3", pt.Tags()["tag"])
+}
+
+func TestPtKvsSetMapChecking(t *testing.T) {
+	_, err := NewTestingRunner(`pt_kvs_set_map({"a": 1}, include_keys=[1])`)
+	assert.Error(t, err)
+
+	_, err = NewTestingRunner(`pt_kvs_set_map({"a": 1}, key_patterns=[1])`)
+	assert.Error(t, err)
+
+	_, err = NewTestingRunner(`pt_kvs_set_map({"a": 1}, limit=1)`)
+	assert.Error(t, err)
 }
 
 func TestPtKvsGetComposite(t *testing.T) {

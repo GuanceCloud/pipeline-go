@@ -17,8 +17,7 @@ func TestAllDoc(t *testing.T) {
 		funcNameMap[strings.TrimSuffix(name, "()")] = true
 	}
 	for fn := range FuncsMap {
-		if fn == "json_all" ||
-			fn == "default_time_with_fmt" ||
+		if fn == "default_time_with_fmt" ||
 			fn == "expr" ||
 			fn == "vaild_json" {
 			continue
