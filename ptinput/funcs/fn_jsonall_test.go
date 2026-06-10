@@ -210,6 +210,22 @@ func TestJSONAllEmptyIncludeKeys(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestJSONAllInvalidJSONDoesNothing(t *testing.T) {
+	runner, err := NewTestingRunner(`json_all(_, include_keys=["service"])`)
+	assert.NoError(t, err)
+
+	pt := ptinput.NewPlPt(point.Logging, "test", nil, map[string]any{
+		"message": `{"service":"api"`,
+	}, time.Now())
+	errR := runScript(runner, pt)
+	if errR != nil {
+		t.Fatal(errR.Error())
+	}
+
+	_, _, err = pt.Get("service")
+	assert.Error(t, err)
+}
+
 func TestJSONAllChecking(t *testing.T) {
 	_, err := NewTestingRunner(`json_all()`)
 	assert.Error(t, err)
