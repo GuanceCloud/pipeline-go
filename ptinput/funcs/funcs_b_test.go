@@ -606,7 +606,7 @@ func TestJsonAllFunc(t *testing.T) {
 			    {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
 			  ]
 			}`,
-			script:   `json_all()`,
+			script:   `json_all(_)`,
 			expected: "Sara",
 			key:      "children[0]",
 		},
@@ -616,7 +616,7 @@ func TestJsonAllFunc(t *testing.T) {
 			    {"first": "Roger", "last": "Craig", "age": 68, "nets": ["fb", "tw"]},
 			    {"first": "Jane", "last": "Murphy", "age": 47, "nets": ["ig", "tw"]}
 			  ]`,
-			script:   `json_all()`,
+			script:   `json_all(_)`,
 			expected: "Dale",
 			key:      "[0].first",
 		},
@@ -647,7 +647,7 @@ func TestJsonAllFunc(t *testing.T) {
   ]
 }
 `
-	script := `json_all()`
+	script := `json_all(_)`
 
 	p, err := NewPipeline(script)
 	assertEqual(t, err, nil)
