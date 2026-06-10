@@ -194,6 +194,16 @@ var (
 	)
 )
 
+type compiledPtKvsSetMapCall struct {
+	exactKeys      map[string]struct{}
+	exactKeyList   []string
+	filterExact    bool
+	exactStatic    bool
+	patterns       []*regexp.Regexp
+	filterPatterns bool
+	patternsStatic bool
+}
+
 func newPtKvsSetMapFunc() *Function {
 	params := []*Param{
 		{
@@ -309,19 +319,26 @@ func ptKvsSet(ctx *runtime.Task, funcExpr *ast.CallExpr, vals ...any) *errchain.
 
 func ptKvsSetMapChecking(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 	includeKeys := ptKvsFuncArgValueNode(funcExpr.Param[1])
-	if includeKeys != nil && includeKeys.NodeType == ast.TypeListLiteral {
-		if _, err := ptKvsStringListFromListLiteral(includeKeys, "include_keys"); err != nil {
-			return runtime.NewRunError(ctx, err.Error(), includeKeys.StartPos())
-		}
+	exactKeys, exactKeyList, filterExact, exactStatic, err := ptKvsExactKeySetFromStaticNode(includeKeys)
+	if err != nil {
+		return runtime.NewRunError(ctx, err.Error(), includeKeys.StartPos())
 	}
 
 	keyPatterns := ptKvsFuncArgValueNode(funcExpr.Param[2])
-	if keyPatterns != nil && keyPatterns.NodeType == ast.TypeListLiteral {
-		if _, err := ptKvsPatternMatchersFromListLiteral(keyPatterns); err != nil {
-			return runtime.NewRunError(ctx, err.Error(), keyPatterns.StartPos())
-		}
+	patterns, filterPatterns, patternsStatic, err := ptKvsPatternMatchersFromStaticNode(keyPatterns)
+	if err != nil {
+		return runtime.NewRunError(ctx, err.Error(), keyPatterns.StartPos())
 	}
 
+	funcExpr.PrivateData = &compiledPtKvsSetMapCall{
+		exactKeys:      exactKeys,
+		exactKeyList:   exactKeyList,
+		filterExact:    filterExact,
+		exactStatic:    exactStatic,
+		patterns:       patterns,
+		filterPatterns: filterPatterns,
+		patternsStatic: patternsStatic,
+	}
 	return nil
 }
 
@@ -345,17 +362,43 @@ func ptKvsSetMap(ctx *runtime.Task, funcExpr *ast.CallExpr, vals ...any) *errcha
 	asTag := vals[3].(bool)
 	raw := vals[4].(bool)
 
-	exactKeys, filterExact, err := ptKvsExactKeySet(includeKeys)
-	if err != nil {
-		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[1].StartPos())
+	compiled, _ := funcExpr.PrivateData.(*compiledPtKvsSetMapCall)
+
+	var (
+		exactKeys      map[string]struct{}
+		exactKeyList   []string
+		filterExact    bool
+		patterns       []*regexp.Regexp
+		filterPatterns bool
+		err            error
+	)
+
+	if compiled != nil && compiled.exactStatic {
+		exactKeys = compiled.exactKeys
+		exactKeyList = compiled.exactKeyList
+		filterExact = compiled.filterExact
+	} else {
+		exactKeys, exactKeyList, filterExact, err = ptKvsExactKeySet(includeKeys)
+		if err != nil {
+			return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[1].StartPos())
+		}
 	}
 
-	patterns, filterPatterns, err := ptKvsPatternMatchers(keyPatterns)
-	if err != nil {
-		return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[2].StartPos())
+	if compiled != nil && compiled.patternsStatic {
+		patterns = compiled.patterns
+		filterPatterns = compiled.filterPatterns
+	} else {
+		patterns, filterPatterns, err = ptKvsPatternMatchers(keyPatterns)
+		if err != nil {
+			return runtime.NewRunError(ctx, err.Error(), funcExpr.Param[2].StartPos())
+		}
 	}
 
 	if !filterExact && !filterPatterns {
+		ctx.Regs.ReturnAppend(int64(0), ast.Int)
+		return nil
+	}
+	if len(exactKeyList) == 0 && len(patterns) == 0 {
 		ctx.Regs.ReturnAppend(int64(0), ast.Int)
 		return nil
 	}
@@ -366,13 +409,27 @@ func ptKvsSetMap(ctx *runtime.Task, funcExpr *ast.CallExpr, vals ...any) *errcha
 		return nil
 	}
 
+	var count int64
+	if len(patterns) == 0 {
+		for _, key := range exactKeyList {
+			val, ok := values[key]
+			if !ok {
+				continue
+			}
+			if ok := ptKvsSetValue(pt, key, val, asTag, raw); ok {
+				count++
+			}
+		}
+		ctx.Regs.ReturnAppend(count, ast.Int)
+		return nil
+	}
+
 	keys := make([]string, 0, len(values))
 	for key := range values {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)
 
-	var count int64
 	for _, key := range keys {
 		if !ptKvsKeyMatched(key, exactKeys, patterns) {
 			continue
@@ -402,17 +459,48 @@ func ptKvsSetValue(pt ptinput.PlInputPt, name string, val any, asTag, raw bool) 
 	return pt.Set(name, val, dtype)
 }
 
-func ptKvsExactKeySet(v any) (map[string]struct{}, bool, error) {
+func ptKvsExactKeySet(v any) (map[string]struct{}, []string, bool, error) {
 	keys, provided, err := ptKvsStringList(v, "include_keys")
 	if err != nil || !provided {
-		return nil, provided, err
+		return nil, nil, provided, err
 	}
 
+	exactKeys := ptKvsStringSet(keys)
+	return exactKeys, ptKvsSortedKeys(exactKeys), true, nil
+}
+
+func ptKvsExactKeySetFromStaticNode(node *ast.Node) (map[string]struct{}, []string, bool, bool, error) {
+	if node == nil || node.NodeType == ast.TypeNilLiteral {
+		return nil, nil, false, true, nil
+	}
+	if node.NodeType != ast.TypeListLiteral {
+		return nil, nil, false, false, nil
+	}
+
+	keys, err := ptKvsStringListFromListLiteral(node, "include_keys")
+	if err != nil {
+		return nil, nil, true, true, err
+	}
+
+	exactKeys := ptKvsStringSet(keys)
+	return exactKeys, ptKvsSortedKeys(exactKeys), true, true, nil
+}
+
+func ptKvsStringSet(keys []string) map[string]struct{} {
 	set := make(map[string]struct{}, len(keys))
 	for _, key := range keys {
 		set[key] = struct{}{}
 	}
-	return set, true, nil
+	return set
+}
+
+func ptKvsSortedKeys(set map[string]struct{}) []string {
+	keys := make([]string, 0, len(set))
+	for key := range set {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 func ptKvsPatternMatchers(v any) ([]*regexp.Regexp, bool, error) {
@@ -422,6 +510,21 @@ func ptKvsPatternMatchers(v any) ([]*regexp.Regexp, bool, error) {
 	}
 
 	return ptKvsCompilePatterns(patterns)
+}
+
+func ptKvsPatternMatchersFromStaticNode(node *ast.Node) ([]*regexp.Regexp, bool, bool, error) {
+	if node == nil || node.NodeType == ast.TypeNilLiteral {
+		return nil, false, true, nil
+	}
+	if node.NodeType != ast.TypeListLiteral {
+		return nil, false, false, nil
+	}
+
+	patterns, err := ptKvsPatternMatchersFromListLiteral(node)
+	if err != nil {
+		return nil, true, true, err
+	}
+	return patterns, true, true, nil
 }
 
 func ptKvsStringList(v any, paramName string) ([]string, bool, error) {
