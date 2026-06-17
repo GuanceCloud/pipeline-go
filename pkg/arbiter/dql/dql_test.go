@@ -26,9 +26,9 @@ func TestDQLCliKodoAlignTime(t *testing.T) {
 	defer srv.Close()
 
 	cli := NewDQLKodo(srv.URL, "wksp", nil)
-	_, err := cli.Query(token.LnColPos{}, "M::cpu", "dql", 10, 0, 0, nil, true, true)
+	_, err := cli.Query(token.LnColPos{}, "M::cpu", "dql", 10, 0, 0, nil, true, true, false)
 	require.NoError(t, err)
-	_, err = cli.Query(token.LnColPos{}, "M::cpu", "dql", 10, 0, 0, nil, false, false)
+	_, err = cli.Query(token.LnColPos{}, "M::cpu", "dql", 10, 0, 0, nil, false, false, true)
 	require.NoError(t, err)
 
 	require.Len(t, bodies, 2)
@@ -37,7 +37,7 @@ func TestDQLCliKodoAlignTime(t *testing.T) {
 	require.Equal(t, false, kodoQuery(t, bodies[0])["disable_streaming_aggregation"])
 	require.Equal(t, false, kodoQuery(t, bodies[1])["align_time"])
 	require.Equal(t, false, kodoQuery(t, bodies[1])["disable_sampling"])
-	require.Equal(t, false, kodoQuery(t, bodies[1])["disable_streaming_aggregation"])
+	require.Equal(t, true, kodoQuery(t, bodies[1])["disable_streaming_aggregation"])
 }
 
 func TestDQLCliOpenAPIAlignTime(t *testing.T) {
@@ -55,16 +55,18 @@ func TestDQLCliOpenAPIAlignTime(t *testing.T) {
 	defer srv.Close()
 
 	cli := NewDQLOpenAPI(srv.URL, OpenAPIPath, "key", nil)
-	_, err := cli.Query(token.LnColPos{}, "M::cpu", "dql", 10, 0, 0, nil, true, true)
+	_, err := cli.Query(token.LnColPos{}, "M::cpu", "dql", 10, 0, 0, nil, true, true, false)
 	require.NoError(t, err)
-	_, err = cli.Query(token.LnColPos{}, "M::cpu", "dql", 10, 0, 0, nil, false, false)
+	_, err = cli.Query(token.LnColPos{}, "M::cpu", "dql", 10, 0, 0, nil, false, false, true)
 	require.NoError(t, err)
 
 	require.Len(t, bodies, 2)
 	require.Equal(t, true, openAPIQuery(t, bodies[0])["alignTime"])
 	require.Equal(t, true, openAPIQuery(t, bodies[0])["disable_sampling"])
+	require.Nil(t, openAPIQuery(t, bodies[0])["disableStreamingAggregation"])
 	require.Equal(t, false, openAPIQuery(t, bodies[1])["alignTime"])
 	require.Equal(t, false, openAPIQuery(t, bodies[1])["disable_sampling"])
+	require.Equal(t, true, openAPIQuery(t, bodies[1])["disableStreamingAggregation"])
 }
 
 func kodoQuery(t *testing.T, body map[string]any) map[string]any {

@@ -39,7 +39,7 @@ var (
 )
 
 type DQL interface {
-	Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, alignTime, disableSampling bool, uuids ...string) (map[string]any, error)
+	Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, alignTime, disableSampling, disableStreamingAggregation bool, uuids ...string) (map[string]any, error)
 	TimeRange() []int64
 }
 
@@ -67,7 +67,7 @@ func (cli *DQLCliKodo) TimeRange() []int64 {
 	return nil
 }
 
-func (cli *DQLCliKodo) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, alignTime, disableSampling bool, uuids ...string) (map[string]any, error) {
+func (cli *DQLCliKodo) Query(pos token.LnColPos, q, qTyp string, limit, offset, slimit int64, timeRange []any, alignTime, disableSampling, disableStreamingAggregation bool, uuids ...string) (map[string]any, error) {
 	url := cli.URL
 	if url == "" {
 		return nil, fmt.Errorf("dql query url is empty")
@@ -82,7 +82,7 @@ func (cli *DQLCliKodo) Query(pos token.LnColPos, q, qTyp string, limit, offset, 
 		"align_time":                    alignTime,
 		"disable_sampling":              disableSampling,
 		"disable_multiple_field":        false,
-		"disable_streaming_aggregation": false,
+		"disable_streaming_aggregation": disableStreamingAggregation,
 		"disable_slimit":                true,
 		"mask_visible":                  true,
 	}
