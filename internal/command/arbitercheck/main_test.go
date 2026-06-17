@@ -70,13 +70,16 @@ trigger(len(hosts), "high", {}, {"hosts": hosts})`,
 	if !res.DQLQueries[0].DisableSampling {
 		t.Fatalf("expected disable_sampling to default true: %+v", res.DQLQueries[0])
 	}
+	if res.DQLQueries[0].DisableStreamingAggregation {
+		t.Fatalf("expected disable_streaming_aggregation to default false: %+v", res.DQLQueries[0])
+	}
 }
 
 func TestRunMockDQLQueryFlagsFalse(t *testing.T) {
 	var stdout, stderr bytes.Buffer
 
 	code := run([]string{
-		"--cmd", `data = dql("M::cpu", align_time=false, disable_sampling=false)
+		"--cmd", `data = dql("M::cpu", align_time=false, disable_sampling=false, disable_streaming_aggregation=true)
 trigger(1, "high", {}, {})`,
 		"--dql-result", `{"series":[],"status_code":200}`,
 		"--require-trigger",
@@ -97,6 +100,9 @@ trigger(1, "high", {}, {})`,
 	}
 	if res.DQLQueries[0].DisableSampling {
 		t.Fatalf("expected disable_sampling=false to be recorded: %+v", res.DQLQueries[0])
+	}
+	if !res.DQLQueries[0].DisableStreamingAggregation {
+		t.Fatalf("expected disable_streaming_aggregation=true to be recorded: %+v", res.DQLQueries[0])
 	}
 }
 
