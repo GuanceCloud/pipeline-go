@@ -269,6 +269,33 @@ grok(_, "%{NOTSPACE:client_ip} %{NOTSPACE:http_ident} %{NOTSPACE:http_auth} \\[%
 	}
 }
 
+func TestGrokRunObserverPanicDoesNotBreakGrok(t *testing.T) {
+	SetGrokRunObserver(func(info GrokRunInfo) {
+		panic("observer panic")
+	})
+	defer SetGrokRunObserver(nil)
+
+	runner, err := NewTestingRunner(`
+grok(_, "%{NOTSPACE:client_ip} %{NOTSPACE:http_ident} %{NOTSPACE:http_auth} \\[%{HTTPDATE:time}\\] \"%{DATA:http_method} %{GREEDYDATA:http_url} HTTP/%{NUMBER:http_version}\" %{INT:status_code} %{INT:bytes}")
+`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	pt := ptinput.NewPlPt(
+		point.Logging, "test", nil,
+		map[string]any{"message": `127.0.0.1 - - [21/Jul/2021:14:14:38 +0800] "GET /?1 HTTP/1.1" 200 2178`},
+		time.Now())
+	if errR := runScript(runner, pt); errR != nil {
+		t.Fatal(errR)
+	}
+
+	v, _, err := pt.Get("client_ip")
+	if err != nil || v != "127.0.0.1" {
+		t.Fatalf("expected grok output after observer panic, got value=%#v err=%v", v, err)
+	}
+}
+
 func TestGrokFastPathCompatibility(t *testing.T) {
 	cases := []struct {
 		name, pl, in string
