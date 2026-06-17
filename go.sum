@@ -6,8 +6,8 @@ github.com/DataDog/datadog-go/v5 v5.1.1 h1:JLZ6s2K1pG2h9GkvEvMdEGqMDyVLEAccdX5Tl
 github.com/DataDog/datadog-go/v5 v5.1.1/go.mod h1:KhiYb2Badlv9/rofz+OznKoEF5XKTonWyhx5K83AP8E=
 github.com/GuanceCloud/cliutils v1.1.22-0.20260326081525-39733a0223bf h1:jv3sbJVjOB/YYeqMUg7tsBBL2zTlovGLLtIMnzar+lo=
 github.com/GuanceCloud/cliutils v1.1.22-0.20260326081525-39733a0223bf/go.mod h1:srJuHkdED/YhjaIayQUJhmPBkmmVPzUX0hsbdIhYd5g=
-github.com/GuanceCloud/grok v1.1.5-0.20260603093938-df62b49f2f01 h1:q7Ovi0kCCbZ5W3Svf8ram4KKH6ISt0VpkQpCYvJkAB8=
-github.com/GuanceCloud/grok v1.1.5-0.20260603093938-df62b49f2f01/go.mod h1:AeiXV1KQ6E62Xy5aC63TF+QhMcye8HvxCl/G/WFP6EM=
+github.com/GuanceCloud/grok v1.1.5-0.20260617045039-38219b0a7154 h1:GeSCRevWP3wGkx3JrOa/xM40rj0ZR8lqHaAoYn2IQWw=
+github.com/GuanceCloud/grok v1.1.5-0.20260617045039-38219b0a7154/go.mod h1:AeiXV1KQ6E62Xy5aC63TF+QhMcye8HvxCl/G/WFP6EM=
 github.com/GuanceCloud/influxdb1-client v0.1.8 h1:7XNICWcW+NxAHFkzQ8mkOCKA/8U2WNH5m+Hm9g0vz4k=
 github.com/GuanceCloud/influxdb1-client v0.1.8/go.mod h1:4HC4b/O653/ezBiHMPBnHYnHCCfsNT2LvCr7wNLngw4=
 github.com/GuanceCloud/platypus v0.3.5-0.20260529080946-6085d331d151 h1:tdqFZIXm0nHHjzJ8G0zyPS4PJBC5FhvFn9i0szmOufM=
