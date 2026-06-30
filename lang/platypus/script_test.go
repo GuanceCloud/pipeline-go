@@ -1,6 +1,7 @@
 package platypus
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
@@ -8,6 +9,9 @@ import (
 	"github.com/GuanceCloud/pipeline-go/constants"
 	"github.com/GuanceCloud/pipeline-go/lang"
 	"github.com/GuanceCloud/pipeline-go/ptinput"
+	"github.com/GuanceCloud/platypus/pkg/ast"
+	"github.com/GuanceCloud/platypus/pkg/engine/runtime"
+	"github.com/GuanceCloud/platypus/pkg/errchain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -85,4 +89,56 @@ func TestDrop(t *testing.T) {
 	if plpt.Dropped() != true {
 		t.Error("drop != true")
 	}
+}
+
+func TestScriptRunWithRuntimeOptsPrivate(t *testing.T) {
+	const privateKey = "test_result"
+
+	setResult := func(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
+		if len(funcExpr.Param) != 1 {
+			return runtime.NewRunError(ctx, "set_result expected 1 arg", funcExpr.NamePos)
+		}
+		val, _, err := runtime.RunStmt(ctx, funcExpr.Param[0])
+		if err != nil {
+			return err
+		}
+		result, ok := ctx.PValue(privateKey)
+		if !ok {
+			return nil
+		}
+		p, ok := result.(*string)
+		if !ok {
+			return runtime.NewRunError(ctx, fmt.Sprintf("%s must be *string", privateKey), funcExpr.NamePos)
+		}
+		*p = fmt.Sprint(val)
+		return nil
+	}
+
+	ret, retErr := NewScripts(map[string]string{
+		"abc.p": `if service == "api" { set_result("hit") }`,
+	}, lang.WithCat(point.Logging), lang.WithFn(
+		map[string]runtime.FuncCall{"set_result": setResult},
+		map[string]runtime.FuncCheck{"set_result": func(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
+			if len(funcExpr.Param) != 1 {
+				return runtime.NewRunError(ctx, "set_result expected 1 arg", funcExpr.NamePos)
+			}
+			return nil
+		}},
+	))
+	if len(retErr) > 0 {
+		t.Fatal(retErr)
+	}
+
+	pt := point.NewPoint("abc", point.NewKVs(map[string]any{
+		"service": "api",
+	}), point.DefaultLoggingOptions()...)
+	plpt := ptinput.PtWrap(point.Logging, pt)
+
+	var got string
+	err := ret["abc.p"].RunWithRuntimeOpts(plpt, nil, nil, runtime.WithPrivate(map[string]any{
+		privateKey: &got,
+	}))
+	assert.NoError(t, err)
+	assert.Equal(t, "hit", got)
+	assert.Nil(t, plpt.Point().KVs().Get("test_result"))
 }
