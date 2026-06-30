@@ -84,14 +84,6 @@ var FnDQLDesc = runtimev2.FnDesc{
 			},
 			Typs: []ast.DType{ast.Bool},
 		},
-		{
-			Name: "disable_streaming_aggregation",
-			Desc: "Disable DQL streaming aggregation. Defaults to false.",
-			Val: func() any {
-				return false
-			},
-			Typs: []ast.DType{ast.Bool},
-		},
 	},
 	Returns: []*runtimev2.Param{
 		{
@@ -161,11 +153,6 @@ func FnDQL(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 		return err
 	}
 
-	disableStreamingAggregation, err := runtimev2.GetParamBool(ctx, expr, FnDQLDesc.Params, 9)
-	if err != nil {
-		return err
-	}
-
 	var uuids []string
 	if uuid != "" {
 		uuids = append(uuids, uuid)
@@ -174,7 +161,7 @@ func FnDQL(ctx *runtimev2.Task, expr *ast.CallExpr) *errchain.PlError {
 	var r map[string]any
 	var qErr error
 	r, qErr = dqlCli.Query(expr.NamePos, query, qtype, limit,
-		offset, slimit, timeRange, alignTime, disableSampling, disableStreamingAggregation, uuids...)
+		offset, slimit, timeRange, alignTime, disableSampling, uuids...)
 
 	if qErr != nil {
 		return runtimev2.NewRunError(ctx, qErr.Error(), expr.NamePos)

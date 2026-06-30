@@ -352,7 +352,7 @@ Function examples:
 
 ## `dql` {#fn-dql}
 
-Function prototype: `fn dql(query: str, qtype: str = "dql", limit: int = 10000, offset: int = 0, slimit: int = 0, time_range: list = [], workspace_uuid: str = "", align_time: bool = true, disable_sampling: bool = true, disable_streaming_aggregation: bool = false) -> map`
+Function prototype: `fn dql(query: str, qtype: str = "dql", limit: int = 10000, offset: int = 0, slimit: int = 0, time_range: list = [], workspace_uuid: str = "", align_time: bool = true, disable_sampling: bool = true) -> map`
 
 Function description: Query data using dql or promql.
 
@@ -367,7 +367,6 @@ Function parameters:
 - `workspace_uuid`: Workspace UUID to query data from.
 - `align_time`: Align relative query time ranges before executing DQL. Defaults to true; set false to disable automatic alignment.
 - `disable_sampling`: Disable DQL sampling. Defaults to true; set false to allow sampling.
-- `disable_streaming_aggregation`: Disable DQL streaming aggregation. Defaults to false.
 
 
 Function returns:
