@@ -1,6 +1,8 @@
 package trigger
 
 import (
+	"encoding/json"
+	"fmt"
 	"sync"
 )
 
@@ -28,9 +30,7 @@ func (tr *Trigger) Trigger(result any, status string, dimTags, relatedData map[s
 	tags := map[string]string{}
 
 	for k, v := range dimTags {
-		if v, ok := v.(string); ok {
-			tags[k] = v
-		}
+		tags[k] = dimensionTagValueToString(v)
 	}
 
 	data := Data{
@@ -44,6 +44,18 @@ func (tr *Trigger) Trigger(result any, status string, dimTags, relatedData map[s
 	}
 
 	tr.vals = append(tr.vals, data)
+}
+
+func dimensionTagValueToString(v any) string {
+	if v, ok := v.(string); ok {
+		return v
+	}
+
+	b, err := json.Marshal(v)
+	if err == nil {
+		return string(b)
+	}
+	return fmt.Sprint(v)
 }
 
 func (tr *Trigger) Result() []Data {
