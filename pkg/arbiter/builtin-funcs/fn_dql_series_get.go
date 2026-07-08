@@ -154,11 +154,28 @@ func dqlSeriesValues(dqlResult map[string]any, name string) []any {
 }
 
 func dqlSeriesFirstValue(dqlResult map[string]any, name string) any {
-	for _, vec := range dqlSeriesValues(dqlResult, name) {
-		values := getList(vec)
-		if len(values) > 0 {
-			return values[0]
+	series := dqlResult["series"]
+
+	for _, v := range getList(series) {
+		s0 := getList(v)
+		if len(s0) == 0 {
+			continue
 		}
+
+		elemMap := getMap(s0[0])
+		if v, ok := elemMap["columns"]; ok {
+			colMap := getMap(v)
+			if v, ok := colMap[name]; ok {
+				return v
+			}
+		}
+		if v, ok := elemMap["tags"]; ok {
+			tagMap := getMap(v)
+			if v, ok := tagMap[name]; ok {
+				return v
+			}
+		}
+		return nil
 	}
 	return nil
 }
