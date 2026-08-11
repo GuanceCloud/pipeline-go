@@ -96,20 +96,101 @@ add_key(a, m["params"]["arg2"])
 			fail:     false,
 		},
 		{
-			name: "invalid url",
+			name: "with prefix",
+			pl: `
+json(_, url)
+m = url_parse(url, "up_")
+add_key(scheme, m["up_scheme"])
+`,
+			in:       `{"url": "https://www.baidu.com"}`,
+			outKey:   "scheme",
+			expected: "https",
+			fail:     false,
+		},
+		{
+			name: "with prefix params",
+			pl: `
+json(_, url)
+m = url_parse(url, "up_")
+add_key(a, m["up_params"]["arg1"])
+`,
+			in:       `{"url": "http://127.0.0.1:9529/v1/metrics?arg1=v1&arg2=v2"}`,
+			outKey:   "a",
+			expected: "v1",
+			fail:     false,
+		},
+		{
+			name: "with prefix variable",
+			pl: `
+json(_, url)
+p = "up_"
+m = url_parse(url, p)
+add_key(scheme, m["up_scheme"])
+`,
+			in:       `{"url": "https://www.baidu.com"}`,
+			outKey:   "scheme",
+			expected: "https",
+			fail:     false,
+		},
+		{
+			name: "with named prefix",
+			pl: `
+json(_, url)
+m = url_parse(url, prefix="up_")
+add_key(scheme, m["up_scheme"])
+`,
+			in:       `{"url": "https://www.baidu.com"}`,
+			outKey:   "scheme",
+			expected: "https",
+			fail:     false,
+		},
+		{
+			name: "empty prefix",
+			pl: `
+json(_, url)
+m = url_parse(url, "")
+add_key(scheme, m["scheme"])
+`,
+			in:       `{"url": "https://www.baidu.com"}`,
+			outKey:   "scheme",
+			expected: "https",
+			fail:     false,
+		},
+		{
+			name: "relative path",
 			pl: `
 json(_, url)
 m = url_parse(url)
 add_key(p, m["path"])
 `,
-			in:   `{"url": "/var/log/datakit/log"}`,
+			in:       `{"url": "/var/log/datakit/log"}`,
+			outKey:   "p",
+			expected: "/var/log/datakit/log",
+		},
+		{
+			name: "too many args",
+			pl: `
+json(_, url)
+m = url_parse(url, "up_", 2)
+`,
+			in:   `{"url": "http://127.0.0.1:9529/v1/metrics?arg1=v1&arg2=v2"}`,
 			fail: true,
 		},
 		{
-			name: "two many args",
+			name: "invalid prefix type",
 			pl: `
 json(_, url)
 m = url_parse(url, 2)
+`,
+			in:   `{"url": "http://127.0.0.1:9529/v1/metrics?arg1=v1&arg2=v2"}`,
+			fail: true,
+		},
+		{
+			name: "invalid prefix type variable",
+			pl: `
+json(_, url)
+p = 123
+m = url_parse(url, p)
 `,
 			in:   `{"url": "http://127.0.0.1:9529/v1/metrics?arg1=v1&arg2=v2"}`,
 			fail: true,
@@ -120,10 +201,8 @@ m = url_parse(url, 2)
 		t.Run(tc.name, func(t *testing.T) {
 			runner, err := NewTestingRunner(tc.pl)
 			if err != nil {
-				if tc.fail {
-					t.Logf("[%d]expect error: %s", idx, err)
-				} else {
-					t.Errorf("[%d] failed: %s", idx, err)
+				if !tc.fail {
+					t.Fatalf("[%d] unexpected compile error: %s", idx, err)
 				}
 				return
 			}
@@ -131,13 +210,17 @@ m = url_parse(url, 2)
 			pt := ptinput.NewPlPt(point.Logging, "test", nil, map[string]any{"message": tc.in}, time.Now())
 			errR := runScript(runner, pt)
 			if errR != nil {
-				t.Fatal(errR)
+				if !tc.fail {
+					t.Fatalf("[%d] unexpected runtime error: %s", idx, errR)
+				}
+				return
+			}
+			if tc.fail {
+				t.Fatal("expected an error, got nil")
 			}
 
 			if v, istag, err := pt.Get(tc.outKey); err != nil {
-				if !tc.fail {
-					t.Errorf("[%d]key %s, error: %s", idx, tc.outKey, err)
-				}
+				t.Errorf("[%d]key %s, error: %s", idx, tc.outKey, err)
 			} else {
 				if istag != ast.String {
 					t.Errorf("key %s should be a field", tc.outKey)

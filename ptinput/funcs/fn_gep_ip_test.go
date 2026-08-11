@@ -124,6 +124,84 @@ func TestGeoIpFunc(t *testing.T) {
 				"isp":      geoDefaultVal,
 			},
 		},
+
+		{
+			in: `{"ip":"1.2.3.4-something", "second":2,"third":"abc","forth":true}`,
+			script: `
+				json(_, ip)
+				geoip(ip, "geo_")`,
+			expected: map[string]string{
+				"geo_city":     "Shanghai",
+				"geo_country":  "CN",
+				"geo_province": "Shanghai",
+				"geo_isp":      geoDefaultVal,
+			},
+		},
+		{
+			in: `{"ip":"1.2.3.4-something", "second":2,"third":"abc","forth":true}`,
+			script: `
+				json(_, ip)
+				p = "geo_"
+				geoip(ip, p)`,
+			expected: map[string]string{
+				"geo_city":     "Shanghai",
+				"geo_country":  "CN",
+				"geo_province": "Shanghai",
+				"geo_isp":      geoDefaultVal,
+			},
+		},
+		{
+			in: `{"ip":"1.2.3.4-something", "second":2,"third":"abc","forth":true}`,
+			script: `
+				json(_, ip)
+				geoip(ip, prefix="geo_")`,
+			expected: map[string]string{
+				"geo_city":     "Shanghai",
+				"geo_country":  "CN",
+				"geo_province": "Shanghai",
+				"geo_isp":      geoDefaultVal,
+			},
+		},
+		{
+			in: `{"ip":"1.2.3.4-something", "second":2,"third":"abc","forth":true}`,
+			script: `
+				json(_, ip)
+				geoip(ip, "")`,
+			expected: map[string]string{
+				"city":     "Shanghai",
+				"country":  "CN",
+				"province": "Shanghai",
+				"isp":      geoDefaultVal,
+			},
+		},
+		{
+			in: `{"second":2,"third":"abc","forth":true}`,
+			script: `
+				geoip(ip, "geo_")`,
+			expected: map[string]string{},
+		},
+		{
+			in: `{"ip":"1.2.3.4-something"}`,
+			script: `
+				json(_, ip)
+				geoip(ip, 2)`,
+			fail: true,
+		},
+		{
+			in: `{"ip":"1.2.3.4-something"}`,
+			script: `
+				json(_, ip)
+				p = 123
+				geoip(ip, p)`,
+			fail: true,
+		},
+		{
+			in: `{"ip":"1.2.3.4-something"}`,
+			script: `
+				json(_, ip)
+				geoip(ip, "a", "b")`,
+			fail: true,
+		},
 	}
 
 	for idx, tc := range cases {
@@ -131,8 +209,10 @@ func TestGeoIpFunc(t *testing.T) {
 
 		runner, err := NewTestingRunner(tc.script)
 		if err != nil {
-			t.Errorf("[%d] failed: %s", idx, err)
-			return
+			if !tc.fail {
+				t.Fatalf("[%d] unexpected compile error: %s", idx, err)
+			}
+			continue
 		}
 
 		pt := ptinput.NewPlPt(
@@ -141,7 +221,14 @@ func TestGeoIpFunc(t *testing.T) {
 		errR := runScript(runner, pt)
 
 		if errR != nil {
-			t.Fatal(errR.Error())
+			if !tc.fail {
+				t.Fatalf("[%d] unexpected runtime error: %s", idx, errR)
+			}
+			continue
+		}
+		if tc.fail {
+			t.Errorf("[%d] expected an error, got nil", idx)
+			continue
 		}
 
 		for k, v := range tc.expected {

@@ -250,16 +250,88 @@ func TestHTTPRequest(t *testing.T) {
 			outkey:   "abc",
 			expected: `{"a":"1"}`,
 		},
+		{
+			name: "legacy_required_args_only",
+			pl: fmt.Sprintf(`
+			resp = http_request("GET", %s)
+			add_key(status_code, resp["status_code"])
+			`, url),
+			in:       `[]`,
+			outkey:   "status_code",
+			expected: int64(200),
+		},
+		{
+			name: "test_prefix",
+			pl: fmt.Sprintf(`
+			resp = http_request("POST", %s, {"extraHeader": "1",
+			"extraHeader": "1"}, {"a": "1"}, "hr_")
+			add_key(abc, resp["hr_body"])
+			`, url),
+			in:       `[]`,
+			outkey:   "abc",
+			expected: `{"a":"1"}`,
+		},
+		{
+			name: "test_prefix_status_code",
+			pl: fmt.Sprintf(`
+			resp = http_request("GET", %s, {"extraHeader": "1",
+			"extraHeader": "1"}, nil, "hr_")
+			add_key(abc, resp["hr_status_code"])
+			`, url),
+			in:       `[]`,
+			outkey:   "abc",
+			expected: int64(200),
+		},
+		{
+			name: "test_prefix_variable",
+			pl: fmt.Sprintf(`
+			p = "hr_"
+			resp = http_request("POST", %s, {"extraHeader": "1",
+			"extraHeader": "1"}, {"a": "1"}, p)
+			add_key(abc, resp["hr_body"])
+			`, url),
+			in:       `[]`,
+			outkey:   "abc",
+			expected: `{"a":"1"}`,
+		},
+		{
+			name: "test_named_prefix",
+			pl: fmt.Sprintf(`
+			resp = http_request("POST", %s, {"extraHeader": "1",
+			"extraHeader": "1"}, {"a": "1"}, prefix="hr_")
+			add_key(abc, resp["hr_body"])
+			`, url),
+			in:       `[]`,
+			outkey:   "abc",
+			expected: `{"a":"1"}`,
+		},
+		{
+			name: "invalid prefix type",
+			pl: fmt.Sprintf(`
+			resp = http_request("POST", %s, {"extraHeader": "1",
+			"extraHeader": "1"}, {"a": "1"}, 123)
+			`, url),
+			in:   `[]`,
+			fail: true,
+		},
+		{
+			name: "invalid prefix type variable",
+			pl: fmt.Sprintf(`
+			p = 123
+			resp = http_request("POST", %s, {"extraHeader": "1",
+			"extraHeader": "1"}, {"a": "1"}, p)
+			`, url),
+			in:   `[]`,
+			fail: true,
+		},
 	}
 
 	for idx, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			runner, err := NewTestingRunner(tc.pl)
 			if err != nil {
-				if tc.fail {
-					t.Logf("[%d]expect error: %s", idx, err)
-				} else {
-					t.Errorf("[%d] failed: %s", idx, err)
+				if !tc.fail {
+					t.Fatalf("[%d] unexpected compile error: %s", idx, err)
 				}
 				return
 			}
@@ -268,7 +340,13 @@ func TestHTTPRequest(t *testing.T) {
 			errR := runScript(runner, pt)
 
 			if errR != nil {
-				t.Fatal(errR.Error())
+				if !tc.fail {
+					t.Fatalf("[%d] unexpected runtime error: %s", idx, errR)
+				}
+				return
+			}
+			if tc.fail {
+				t.Fatal("expected an error, got nil")
 			}
 
 			v, _, _ := pt.Get(tc.outkey)

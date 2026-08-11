@@ -23,7 +23,7 @@ func TestUserAgent(t *testing.T) {
 	}{
 		{
 			name: "normal",
-			pl: `json(_, userAgent) 
+			pl: `json(_, userAgent)
 			user_agent(userAgent)`,
 			in: `
 {
@@ -47,7 +47,7 @@ func TestUserAgent(t *testing.T) {
 		},
 		{
 			name: "normal",
-			pl: `json(_, userAgent) 
+			pl: `json(_, userAgent)
 			user_agent(userAgent)`,
 			in: `
 {
@@ -69,7 +69,7 @@ func TestUserAgent(t *testing.T) {
 
 		{
 			name: "normal",
-			pl: `json(_, userAgent) 
+			pl: `json(_, userAgent)
 			user_agent(agent)`,
 			in: `
 {
@@ -82,7 +82,7 @@ func TestUserAgent(t *testing.T) {
 
 		{
 			name: "invalid arg type",
-			pl: `json(_, userAgent) 
+			pl: `json(_, userAgent)
 			user_agent("userAgent")`,
 			in: `
 		{
@@ -94,9 +94,143 @@ func TestUserAgent(t *testing.T) {
 		},
 
 		{
+			name: "with prefix",
+			pl: `json(_, userAgent)
+			user_agent(userAgent, "ua_")`,
+			in: `
+{
+   "userAgent" : "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36",
+   "second"    : 2,
+   "third"     : "abc",
+   "forth"     : true
+}
+`,
+			expected: map[string]interface{}{
+				"ua_isMobile":   false,
+				"ua_isBot":      false,
+				"ua_os":         "Windows 7",
+				"ua_browser":    "Chrome",
+				"ua_browserVer": "36.0.1985.125",
+				"ua_engine":     "AppleWebKit",
+				"ua_engineVer":  "537.36",
+				"ua_ua":         "Windows",
+			},
+			fail: false,
+		},
+
+		{
+			name: "with prefix variable",
+			pl: `json(_, userAgent)
+			p = "ua_"
+			user_agent(userAgent, p)`,
+			in: `
+{
+   "userAgent" : "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36",
+   "second"    : 2,
+   "third"     : "abc",
+   "forth"     : true
+}
+`,
+			expected: map[string]interface{}{
+				"ua_isMobile":   false,
+				"ua_isBot":      false,
+				"ua_os":         "Windows 7",
+				"ua_browser":    "Chrome",
+				"ua_browserVer": "36.0.1985.125",
+				"ua_engine":     "AppleWebKit",
+				"ua_engineVer":  "537.36",
+				"ua_ua":         "Windows",
+			},
+			fail: false,
+		},
+
+		{
+			name: "with named prefix",
+			pl: `json(_, userAgent)
+			user_agent(userAgent, prefix="ua_")`,
+			in: `
+{
+   "userAgent" : "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36",
+   "second"    : 2,
+   "third"     : "abc",
+   "forth"     : true
+}
+`,
+			expected: map[string]interface{}{
+				"ua_isMobile":   false,
+				"ua_isBot":      false,
+				"ua_os":         "Windows 7",
+				"ua_browser":    "Chrome",
+				"ua_browserVer": "36.0.1985.125",
+				"ua_engine":     "AppleWebKit",
+				"ua_engineVer":  "537.36",
+				"ua_ua":         "Windows",
+			},
+			fail: false,
+		},
+
+		{
+			name: "empty prefix",
+			pl: `json(_, userAgent)
+			user_agent(userAgent, "")`,
+			in: `
+{
+   "userAgent" : "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36",
+   "second"    : 2,
+   "third"     : "abc",
+   "forth"     : true
+}
+`,
+			expected: map[string]interface{}{
+				"isMobile":   false,
+				"isBot":      false,
+				"os":         "Windows 7",
+				"browser":    "Chrome",
+				"browserVer": "36.0.1985.125",
+				"engine":     "AppleWebKit",
+				"engineVer":  "537.36",
+				"ua":         "Windows",
+			},
+			fail: false,
+		},
+
+		{
+			name:     "missing key with prefix",
+			pl:       `user_agent(agent, "ua_")`,
+			in:       `{}`,
+			expected: map[string]interface{}{},
+			fail:     false,
+		},
+
+		{
+			name: "invalid prefix type",
+			pl: `json(_, userAgent)
+			user_agent(userAgent, 123)`,
+			in: `
+{
+   "userAgent" : "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
+}
+`,
+			fail: true,
+		},
+
+		{
+			name: "invalid prefix type variable",
+			pl: `json(_, userAgent)
+			p = 123
+			user_agent(userAgent, p)`,
+			in: `
+{
+   "userAgent" : "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.125 Safari/537.36"
+}
+`,
+			fail: true,
+		},
+
+		{
 			name: "too many args",
-			pl: `json(_, userAgent) 
-			user_agent(userAgent, someArg)`,
+			pl: `json(_, userAgent)
+			user_agent(userAgent, someArg, anotherArg)`,
 			in: `
 		{
 		   "userAgent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15"
@@ -109,10 +243,8 @@ func TestUserAgent(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			runner, err := NewTestingRunner(tc.pl)
 			if err != nil {
-				if tc.fail {
-					t.Logf("[%d]expect error: %s", idx, err)
-				} else {
-					t.Errorf("[%d] failed: %s", idx, err)
+				if !tc.fail {
+					t.Fatalf("[%d] unexpected compile error: %s", idx, err)
 				}
 				return
 			}
@@ -122,19 +254,21 @@ func TestUserAgent(t *testing.T) {
 			errR := runScript(runner, pt)
 
 			if errR != nil {
-				if tc.fail {
-					t.Logf("[%d]expect error: %s", idx, err)
-				} else {
-					t.Fatal(errR)
+				if !tc.fail {
+					t.Fatalf("[%d] unexpected runtime error: %s", idx, errR)
 				}
-			} else {
-				fieldsToCompare := make(map[string]interface{})
-				for k := range tc.expected {
-					fieldsToCompare[k], _, _ = pt.Get(k)
-				}
-				tu.Equals(t, tc.expected, fieldsToCompare)
-				t.Logf("[%d] PASS", idx)
+				return
 			}
+			if tc.fail {
+				t.Fatal("expected an error, got nil")
+			}
+
+			fieldsToCompare := make(map[string]interface{})
+			for k := range tc.expected {
+				fieldsToCompare[k], _, _ = pt.Get(k)
+			}
+			tu.Equals(t, tc.expected, fieldsToCompare)
+			t.Logf("[%d] PASS", idx)
 		})
 	}
 }
