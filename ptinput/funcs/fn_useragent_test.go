@@ -19,6 +19,7 @@ func TestUserAgent(t *testing.T) {
 		name     string
 		pl, in   string
 		expected map[string]interface{}
+		absent   []string
 		fail     bool
 	}{
 		{
@@ -96,6 +97,7 @@ func TestUserAgent(t *testing.T) {
 		{
 			name: "with prefix",
 			pl: `json(_, userAgent)
+			add_key(os, "existing")
 			user_agent(userAgent, "ua_")`,
 			in: `
 {
@@ -106,6 +108,7 @@ func TestUserAgent(t *testing.T) {
 }
 `,
 			expected: map[string]interface{}{
+				"os":            "existing",
 				"ua_isMobile":   false,
 				"ua_isBot":      false,
 				"ua_os":         "Windows 7",
@@ -115,7 +118,8 @@ func TestUserAgent(t *testing.T) {
 				"ua_engineVer":  "537.36",
 				"ua_ua":         "Windows",
 			},
-			fail: false,
+			absent: []string{"isMobile", "isBot", "browser", "browserVer", "engine", "engineVer", "ua"},
+			fail:   false,
 		},
 
 		{
@@ -268,6 +272,11 @@ func TestUserAgent(t *testing.T) {
 				fieldsToCompare[k], _, _ = pt.Get(k)
 			}
 			tu.Equals(t, tc.expected, fieldsToCompare)
+			for _, k := range tc.absent {
+				if _, _, err := pt.Get(k); err == nil {
+					t.Errorf("key %q should not be generated without the prefix", k)
+				}
+			}
 			t.Logf("[%d] PASS", idx)
 		})
 	}

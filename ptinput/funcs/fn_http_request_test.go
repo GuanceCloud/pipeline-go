@@ -214,6 +214,7 @@ func TestHTTPRequest(t *testing.T) {
 	cases := []struct {
 		name, pl, in string
 		expected     interface{}
+		absent       []string
 		fail         bool
 		outkey       string
 	}{
@@ -266,10 +267,14 @@ func TestHTTPRequest(t *testing.T) {
 			resp = http_request("POST", %s, {"extraHeader": "1",
 			"extraHeader": "1"}, {"a": "1"}, "hr_")
 			add_key(abc, resp["hr_body"])
+			if resp["body"] != nil {
+				add_key(unexpected_unprefixed_key, true)
+			}
 			`, url),
 			in:       `[]`,
 			outkey:   "abc",
 			expected: `{"a":"1"}`,
+			absent:   []string{"unexpected_unprefixed_key"},
 		},
 		{
 			name: "test_prefix_status_code",
@@ -295,15 +300,18 @@ func TestHTTPRequest(t *testing.T) {
 			expected: `{"a":"1"}`,
 		},
 		{
-			name: "test_named_prefix",
+			name: "test_named_prefix_skips_optional_args",
 			pl: fmt.Sprintf(`
-			resp = http_request("POST", %s, {"extraHeader": "1",
-			"extraHeader": "1"}, {"a": "1"}, prefix="hr_")
+			resp = http_request("GET", %s, prefix="hr_")
 			add_key(abc, resp["hr_body"])
+			if resp["body"] != nil {
+				add_key(unexpected_unprefixed_key, true)
+			}
 			`, url),
 			in:       `[]`,
 			outkey:   "abc",
-			expected: `{"a":"1"}`,
+			expected: `{"a":"hello"}`,
+			absent:   []string{"unexpected_unprefixed_key"},
 		},
 		{
 			name: "invalid prefix type",
@@ -352,6 +360,10 @@ func TestHTTPRequest(t *testing.T) {
 			v, _, _ := pt.Get(tc.outkey)
 			// tu.Equals(t, nil, err)
 			assert.Equal(t, tc.expected, v)
+			for _, k := range tc.absent {
+				_, _, err := pt.Get(k)
+				assert.Error(t, err, "key %q indicates an unprefixed result entry was generated", k)
+			}
 
 			t.Logf("[%d] PASS", idx)
 		})

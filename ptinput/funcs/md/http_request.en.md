@@ -1,6 +1,6 @@
 ### `http_request()` {#fn-http-request}
 
-Function prototype: `fn http_request(method: str, url: str, headers: map, body: any, prefix: str = "") map`
+Function prototype: `fn http_request(method: str, url: str, headers: map = nil, body: any = nil, prefix: str = "") map`
 
 Function description: Send an HTTP request, receive the response, and encapsulate it into a map
 
@@ -8,8 +8,8 @@ Function parameters:
 
 - `method`: GET|POST
 - `url`: Request path
-- `headers`: Additional header，the type is map[string]string
-- `body`: Request body
+- `headers`: Optional. Additional headers of type map[string]string
+- `body`: Optional. Request body
 - `prefix`: Optional. Adds a custom prefix to the fixed keys (`status_code`, `body`) of the returned map to avoid conflicts with existing fields. It can also be passed as a named parameter, e.g. `http_request(method, url, prefix="hr_")`.
 
 Return type: map

@@ -21,6 +21,7 @@ func TestURLParse(t *testing.T) {
 		pl, in   string
 		outKey   string
 		expected interface{}
+		absent   []string
 		fail     bool
 	}{
 		{
@@ -101,10 +102,14 @@ add_key(a, m["params"]["arg2"])
 json(_, url)
 m = url_parse(url, "up_")
 add_key(scheme, m["up_scheme"])
+if m["scheme"] != nil {
+    add_key(unexpected_unprefixed_key, true)
+}
 `,
 			in:       `{"url": "https://www.baidu.com"}`,
 			outKey:   "scheme",
 			expected: "https",
+			absent:   []string{"unexpected_unprefixed_key"},
 			fail:     false,
 		},
 		{
@@ -227,6 +232,11 @@ m = url_parse(url, p)
 				} else {
 					tu.Equals(t, tc.expected, v)
 					t.Logf("[%d] PASS", idx)
+				}
+			}
+			for _, k := range tc.absent {
+				if _, _, err := pt.Get(k); err == nil {
+					t.Errorf("key %q indicates an unprefixed result entry was generated", k)
 				}
 			}
 		})

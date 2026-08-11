@@ -1,6 +1,6 @@
 ### `http_request()` {#fn-http-request}
 
-函数原型： `fn http_request(method: str, url: str, headers: map, body: any, prefix: str = "") map`
+函数原型： `fn http_request(method: str, url: str, headers: map = nil, body: any = nil, prefix: str = "") map`
 
 函数说明： 发送 HTTP 请求，接收响应并封装成 map
 
@@ -8,8 +8,8 @@
 
 - `method`：GET|POST
 - `url`: 请求路径
-- `headers`：附加的 header，类型为 map[string]string
-- `body`：请求体
+- `headers`：可选参数，附加的 header，类型为 map[string]string
+- `body`：可选参数，请求体
 - `prefix`：可选参数，为返回 map 中固定的 key（`status_code`、`body`）添加自定义前缀，避免与已有字段产生冲突。支持以命名参数形式传入，如 `http_request(method, url, prefix="hr_")`
 
 返回值类型：map

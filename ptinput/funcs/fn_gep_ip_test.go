@@ -57,6 +57,7 @@ func TestGeoIpFunc(t *testing.T) {
 		script string
 
 		expected map[string]string
+		absent   []string
 
 		fail bool
 	}{
@@ -129,13 +130,16 @@ func TestGeoIpFunc(t *testing.T) {
 			in: `{"ip":"1.2.3.4-something", "second":2,"third":"abc","forth":true}`,
 			script: `
 				json(_, ip)
+				add_key(city, "existing")
 				geoip(ip, "geo_")`,
 			expected: map[string]string{
+				"city":         "existing",
 				"geo_city":     "Shanghai",
 				"geo_country":  "CN",
 				"geo_province": "Shanghai",
 				"geo_isp":      geoDefaultVal,
 			},
+			absent: []string{"country", "province", "isp"},
 		},
 		{
 			in: `{"ip":"1.2.3.4-something", "second":2,"third":"abc","forth":true}`,
@@ -235,6 +239,10 @@ func TestGeoIpFunc(t *testing.T) {
 			r, _, e := pt.Get(k)
 			assert.NoError(t, e)
 			assert.Equal(t, v, r, "`%s` != `%s`, key: `%s`", r, v, k)
+		}
+		for _, k := range tc.absent {
+			_, _, err := pt.Get(k)
+			assert.Error(t, err, "key %q should not be generated without the prefix", k)
 		}
 	}
 }
