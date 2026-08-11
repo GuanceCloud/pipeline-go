@@ -6,7 +6,7 @@ Function description: Send an HTTP request, receive the response, and encapsulat
 
 Function parameters:
 
-- `method`: GET|POST
+- `method`: HTTP request method, such as GET, POST, or PUT
 - `url`: Request path
 - `headers`: Optional. Additional headers of type map[string]string
 - `body`: Optional. Request body
@@ -32,7 +32,7 @@ add_key(abc, resp_body["a"])
 Example with prefix:
 
 ```python
-resp = http_request("GET", "http://localhost:8080/testResp", {}, "", "hr_")
+resp = http_request("GET", "http://localhost:8080/testResp", prefix="hr_")
 resp_body = load_json(resp["hr_body"])
 
 add_key(abc, resp["hr_status_code"])

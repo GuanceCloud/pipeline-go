@@ -6,7 +6,7 @@
 
 参数：
 
-- `method`：GET|POST
+- `method`：HTTP 请求方法，如 GET、POST、PUT
 - `url`: 请求路径
 - `headers`：可选参数，附加的 header，类型为 map[string]string
 - `body`：可选参数，请求体
@@ -32,7 +32,7 @@ add_key(abc, resp_body["a"])
 添加前缀示例：
 
 ```python
-resp = http_request("GET", "http://localhost:8080/testResp", {}, "", "hr_")
+resp = http_request("GET", "http://localhost:8080/testResp", prefix="hr_")
 resp_body = load_json(resp["hr_body"])
 
 add_key(abc, resp["hr_status_code"])

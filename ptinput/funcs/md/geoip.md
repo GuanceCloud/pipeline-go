@@ -29,8 +29,8 @@ geoip(ip)
   "country"  : "AU",
   "ip"       : "1.2.3.4",
   "province" : "Queensland",
-  "isp"      : "unknown"
-  "message"  : "{\"ip\": \"1.2.3.4\"}",
+  "isp"      : "unknown",
+  "message"  : "{\"ip\": \"1.2.3.4\"}"
 }
 ```
 
