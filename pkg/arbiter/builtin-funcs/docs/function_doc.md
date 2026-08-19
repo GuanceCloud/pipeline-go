@@ -1586,6 +1586,73 @@ Function examples:
 
     
 
+## `push_log` {#fn-push_log}
+
+Function prototype: `fn push_log(data: map|list, index: str = "") -> map`
+
+Function description: Push one or more log records to the current workspace.
+
+Function parameters:
+
+- `data`: A structured log record or a list of records. Each record contains optional source and tags plus fields; fields.message is required.
+- `index`: Optional destination log index. An empty value uses the default index.
+
+
+Function returns:
+
+- `map`: Push result containing ok, accepted and error.
+
+
+Function examples:
+
+* Case 0:
+
+    Script content:
+
+    ```txt
+    result = push_log({
+        "source": "risk_check",
+        "tags": {
+            "service": "payment",
+            "env": "prod"
+        },
+        "fields": {
+            "message": "risk detected",
+            "score": 95.5
+        }
+    })
+    printf("%v", result)
+    ```
+
+    Standard output:
+
+    ```txt
+    {"accepted":1,"error":"","ok":true}
+    ```
+
+    
+* Case 1:
+
+    Script content:
+
+    ```txt
+    result = push_log({
+        "source": "risk_check",
+        "fields": {
+            "message": "risk detected"
+        }
+    }, index="security")
+    printf("%v", result)
+    ```
+
+    Standard output:
+
+    ```txt
+    {"accepted":1,"error":"","ok":true}
+    ```
+
+    
+
 ## `replace` {#fn-replace}
 
 Function prototype: `fn replace(input: str, pattern: str, replacement: str) -> (str, bool)`

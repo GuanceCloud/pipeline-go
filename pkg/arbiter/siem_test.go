@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	funcs "github.com/GuanceCloud/pipeline-go/pkg/arbiter/builtin-funcs"
 	"github.com/stretchr/testify/require"
 )
 
@@ -35,4 +36,28 @@ func TestRunStopsWhenSignalExits(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("arbiter runtime did not stop after signal exit")
 	}
+}
+
+type logWriter struct {
+	index string
+	data  any
+}
+
+func (w *logWriter) Push(index string, data any) (map[string]any, error) {
+	w.index = index
+	w.data = data
+	return map[string]any{"ok": true, "accepted": int64(1), "error": ""}, nil
+}
+
+func TestRunWithLogWriter(t *testing.T) {
+	writer := &logWriter{}
+	err := Run("push_log.p", `push_log({"fields": {"message": "risk detected"}})`,
+		WithFuncs(funcs.Funcs),
+		WithLogWriter(writer),
+	)
+	require.NoError(t, err)
+	require.Empty(t, writer.index)
+	require.Equal(t, map[string]any{
+		"fields": map[string]any{"message": "risk detected"},
+	}, writer.data)
 }

@@ -656,6 +656,42 @@ printf("%s", resp_str)`,
 	},
 }
 
+var _ = AddExps(cPushLog)
+var cPushLog = &FuncExample{
+	FnName: FnPushLogDesc.Name,
+	Progs: []ProgCase{
+		{
+			Name: "push_log_default_index",
+			Script: `result = push_log({
+    "source": "risk_check",
+    "tags": {
+        "service": "payment",
+        "env": "prod"
+    },
+    "fields": {
+        "message": "risk detected",
+        "score": 95.5
+    }
+})
+printf("%v", result)`,
+			Stdout:  `{"accepted":1,"error":"","ok":true}`,
+			jsonout: true,
+		},
+		{
+			Name: "push_log_custom_index",
+			Script: `result = push_log({
+    "source": "risk_check",
+    "fields": {
+        "message": "risk detected"
+    }
+}, index="security")
+printf("%v", result)`,
+			Stdout:  `{"accepted":1,"error":"","ok":true}`,
+			jsonout: true,
+		},
+	},
+}
+
 var _ = AddExps(cLen)
 var cLen = &FuncExample{
 	FnName: FnLenDesc.Name,
