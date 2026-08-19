@@ -664,7 +664,7 @@ var cPushLog = &FuncExample{
 			Name: "push_log_default_index",
 			Script: `result = push_log({
     "source": "risk_check",
-    "timestamp": 1787000000000,
+    "time": time_now(),
     "tags": {
         "service": "payment",
         "env": "prod"

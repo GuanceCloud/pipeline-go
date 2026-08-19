@@ -1594,7 +1594,7 @@ Function description: Push one or more log records to the current workspace.
 
 Function parameters:
 
-- `data`: A structured log record or a list of records. Each record contains a non-empty fields map; source, timestamp and tags are optional, and message is not required. If timestamp is omitted, the push_log call time is used; timestamp accepts Unix milliseconds or RFC3339.
+- `data`: A structured log record or a list of records. Each record contains a non-empty fields map; source, time and tags are optional, and message is not required. If time is omitted, the push_log call time is used; time accepts a Unix timestamp in nanoseconds.
 - `index`: Optional destination log index. An empty value uses the default index.
 
 
@@ -1612,7 +1612,7 @@ Function examples:
     ```txt
     result = push_log({
         "source": "risk_check",
-        "timestamp": 1787000000000,
+        "time": time_now(),
         "tags": {
             "service": "payment",
             "env": "prod"

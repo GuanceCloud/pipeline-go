@@ -42,6 +42,7 @@ func TestPushLog(t *testing.T) {
 			require.True(t, ok)
 			if tc.Name == "push_log_default_index" {
 				assert.Empty(t, writer.index)
+				assert.IsType(t, int64(0), data["time"])
 				assert.Equal(t, 95.5, fields["score"])
 				assert.NotContains(t, fields, "message")
 			} else {

@@ -15,7 +15,7 @@ var FnPushLogDesc = runtimev2.FnDesc{
 	Params: []*runtimev2.Param{
 		{
 			Name: "data",
-			Desc: "A structured log record or a list of records. Each record contains a non-empty fields map; source, timestamp and tags are optional, and message is not required. If timestamp is omitted, the push_log call time is used; timestamp accepts Unix milliseconds or RFC3339.",
+			Desc: "A structured log record or a list of records. Each record contains a non-empty fields map; source, time and tags are optional, and message is not required. If time is omitted, the push_log call time is used; time accepts a Unix timestamp in nanoseconds.",
 			Typs: []ast.DType{ast.Map, ast.List},
 		},
 		{
