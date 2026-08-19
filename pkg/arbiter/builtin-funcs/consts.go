@@ -10,4 +10,5 @@ const (
 	PGeoIPDB    runtimev2.TaskP = "P_GEO_IPDB"
 	PCallFunc   runtimev2.TaskP = "P_CALL_FUNC"
 	POptions    runtimev2.TaskP = "P_OPTIONS"
+	PLogWriter  runtimev2.TaskP = "P_LOG_WRITER"
 )

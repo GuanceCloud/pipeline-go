@@ -1586,6 +1586,63 @@
 
     
 
+## `push_log` {#fn-push_log}
+
+函数原型： `fn push_log(data: map|list, index: str = "") -> map`
+
+函数描述： Push one or more log records to the current workspace.
+
+函数参数：
+
+- `data`: A log record map or a list of log record maps.
+- `index`: Optional destination log index. An empty value uses the default index.
+
+
+函数返回值：
+
+- `map`: Push result containing ok, accepted and error.
+
+
+函数示例：
+
+* 示例 0:
+
+    脚本内容：
+
+    ```txt
+    result = push_log({
+        "message": "risk detected",
+        "score": 95.5
+    })
+    printf("%v", result)
+    ```
+
+    标准输出：
+
+    ```txt
+    {"accepted":1,"error":"","ok":true}
+    ```
+
+
+* 示例 1:
+
+    脚本内容：
+
+    ```txt
+    result = push_log({
+        "message": "risk detected"
+    }, index="security")
+    printf("%v", result)
+    ```
+
+    标准输出：
+
+    ```txt
+    {"accepted":1,"error":"","ok":true}
+    ```
+
+
+
 ## `replace` {#fn-replace}
 
 函数原型： `fn replace(input: str, pattern: str, replacement: str) -> (str, bool)`
