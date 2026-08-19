@@ -40,11 +40,14 @@ func TestPushLog(t *testing.T) {
 			assert.Equal(t, "risk_check", data["source"])
 			fields, ok := data["fields"].(map[string]any)
 			require.True(t, ok)
-			assert.Equal(t, "risk detected", fields["message"])
 			if tc.Name == "push_log_default_index" {
 				assert.Empty(t, writer.index)
+				assert.IsType(t, int64(0), data["time"])
+				assert.Equal(t, 95.5, fields["score"])
+				assert.NotContains(t, fields, "message")
 			} else {
 				assert.Equal(t, "security", writer.index)
+				assert.Equal(t, "risk detected", fields["message"])
 			}
 		})
 	}

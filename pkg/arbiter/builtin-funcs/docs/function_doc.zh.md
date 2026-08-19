@@ -1594,7 +1594,7 @@
 
 函数参数：
 
-- `data`: A structured log record or a list of records. Each record contains optional source and tags plus fields; fields.message is required.
+- `data`: A structured log record or a list of records. Each record contains a non-empty fields map; source, time and tags are optional, and message is not required. If time is omitted, the push_log call time is used; time accepts a Unix timestamp in nanoseconds.
 - `index`: Optional destination log index. An empty value uses the default index.
 
 
@@ -1612,12 +1612,12 @@
     ```txt
     result = push_log({
         "source": "risk_check",
+        "time": time_now(),
         "tags": {
             "service": "payment",
             "env": "prod"
         },
         "fields": {
-            "message": "risk detected",
             "score": 95.5
         }
     })
