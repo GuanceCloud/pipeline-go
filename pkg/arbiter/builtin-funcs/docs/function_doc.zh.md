@@ -1623,7 +1623,7 @@
     {"accepted":1,"error":"","ok":true}
     ```
 
-
+    
 * 示例 1:
 
     脚本内容：
@@ -1641,7 +1641,7 @@
     {"accepted":1,"error":"","ok":true}
     ```
 
-
+    
 
 ## `replace` {#fn-replace}
 

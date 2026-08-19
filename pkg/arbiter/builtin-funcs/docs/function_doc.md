@@ -1623,7 +1623,7 @@ Function examples:
     {"accepted":1,"error":"","ok":true}
     ```
 
-
+    
 * Case 1:
 
     Script content:
@@ -1641,7 +1641,7 @@ Function examples:
     {"accepted":1,"error":"","ok":true}
     ```
 
-
+    
 
 ## `replace` {#fn-replace}
 
