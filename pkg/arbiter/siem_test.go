@@ -51,11 +51,13 @@ func (w *logWriter) Push(index string, data any) (map[string]any, error) {
 
 func TestRunWithLogWriter(t *testing.T) {
 	writer := &logWriter{}
-	err := Run("push_log.p", `push_log({"message": "risk detected"})`,
+	err := Run("push_log.p", `push_log({"fields": {"message": "risk detected"}})`,
 		WithFuncs(funcs.Funcs),
 		WithLogWriter(writer),
 	)
 	require.NoError(t, err)
 	require.Empty(t, writer.index)
-	require.Equal(t, map[string]any{"message": "risk detected"}, writer.data)
+	require.Equal(t, map[string]any{
+		"fields": map[string]any{"message": "risk detected"},
+	}, writer.data)
 }

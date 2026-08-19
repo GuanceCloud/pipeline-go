@@ -663,8 +663,15 @@ var cPushLog = &FuncExample{
 		{
 			Name: "push_log_default_index",
 			Script: `result = push_log({
-    "message": "risk detected",
-    "score": 95.5
+    "source": "risk_check",
+    "tags": {
+        "service": "payment",
+        "env": "prod"
+    },
+    "fields": {
+        "message": "risk detected",
+        "score": 95.5
+    }
 })
 printf("%v", result)`,
 			Stdout:  `{"accepted":1,"error":"","ok":true}`,
@@ -673,7 +680,10 @@ printf("%v", result)`,
 		{
 			Name: "push_log_custom_index",
 			Script: `result = push_log({
-    "message": "risk detected"
+    "source": "risk_check",
+    "fields": {
+        "message": "risk detected"
+    }
 }, index="security")
 printf("%v", result)`,
 			Stdout:  `{"accepted":1,"error":"","ok":true}`,

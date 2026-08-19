@@ -37,7 +37,10 @@ func TestPushLog(t *testing.T) {
 
 			data, ok := writer.data.(map[string]any)
 			require.True(t, ok)
-			assert.Equal(t, "risk detected", data["message"])
+			assert.Equal(t, "risk_check", data["source"])
+			fields, ok := data["fields"].(map[string]any)
+			require.True(t, ok)
+			assert.Equal(t, "risk detected", fields["message"])
 			if tc.Name == "push_log_default_index" {
 				assert.Empty(t, writer.index)
 			} else {
@@ -49,7 +52,7 @@ func TestPushLog(t *testing.T) {
 
 func TestPushLogReturnsWriterError(t *testing.T) {
 	writer := &logWriterMock{err: errors.New("kodo unavailable")}
-	prog := `result = push_log({"message": "risk detected"})
+	prog := `result = push_log({"fields": {"message": "risk detected"}})
 printf("%v", result)`
 	script, err := engine.ParseV2("push_log_error", prog, Funcs)
 	require.NoError(t, err)
@@ -66,7 +69,7 @@ printf("%v", result)`
 
 func TestPushLogRequiresWriter(t *testing.T) {
 	script, err := engine.ParseV2("push_log_missing_writer",
-		`push_log({"message": "risk detected"})`, Funcs)
+		`push_log({"fields": {"message": "risk detected"}})`, Funcs)
 	require.NoError(t, err)
 
 	err = script.Run(nil)

@@ -1594,7 +1594,7 @@ Function description: Push one or more log records to the current workspace.
 
 Function parameters:
 
-- `data`: A log record map or a list of log record maps.
+- `data`: A structured log record or a list of records. Each record contains optional source and tags plus fields; fields.message is required.
 - `index`: Optional destination log index. An empty value uses the default index.
 
 
@@ -1611,8 +1611,15 @@ Function examples:
 
     ```txt
     result = push_log({
-        "message": "risk detected",
-        "score": 95.5
+        "source": "risk_check",
+        "tags": {
+            "service": "payment",
+            "env": "prod"
+        },
+        "fields": {
+            "message": "risk detected",
+            "score": 95.5
+        }
     })
     printf("%v", result)
     ```
@@ -1630,7 +1637,10 @@ Function examples:
 
     ```txt
     result = push_log({
-        "message": "risk detected"
+        "source": "risk_check",
+        "fields": {
+            "message": "risk detected"
+        }
     }, index="security")
     printf("%v", result)
     ```

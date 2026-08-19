@@ -15,7 +15,7 @@ var FnPushLogDesc = runtimev2.FnDesc{
 	Params: []*runtimev2.Param{
 		{
 			Name: "data",
-			Desc: "A log record map or a list of log record maps.",
+			Desc: "A structured log record or a list of records. Each record contains optional source and tags plus fields; fields.message is required.",
 			Typs: []ast.DType{ast.Map, ast.List},
 		},
 		{
