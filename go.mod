@@ -1,6 +1,6 @@
 module github.com/GuanceCloud/pipeline-go
 
-go 1.19
+go 1.26.2
 
 require (
 	github.com/DataDog/datadog-agent/pkg/obfuscate v0.47.1

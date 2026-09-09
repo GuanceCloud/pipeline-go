@@ -163,6 +163,6 @@ func TestDetectTimezone(t *testing.T) {
 		}
 		assert.Equal(t, time.Unix(0, v.expTS),
 			time.Unix(0, tsAct),
-			fmt.Sprintf(v.name))
+			fmt.Sprintf("%s", v.name))
 	}
 }

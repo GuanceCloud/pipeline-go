@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/goccy/go-json"
@@ -29,14 +30,30 @@ var defaultTransport http.RoundTripper = &http.Transport{
 	ExpectContinueTimeout: 1 * time.Second,
 }
 
-var gDisableInternalNet bool
-var gCIDRsWhitelist []string
-var gHostWhitelist []string
+type netFilterPolicy struct {
+	disableInternal bool
+	cidrsWhitelist  []string
+	hostWhitelist   []string
+}
 
+var gNetFilterPolicy atomic.Pointer[netFilterPolicy]
+
+// SetNetFilter replaces the entire policy and copies the provided allowlists.
+// Concurrent requests observe either the previous or the new complete policy.
 func SetNetFilter(disableInternal bool, cidrWList, hostWList []string) {
-	gDisableInternalNet = disableInternal
-	gCIDRsWhitelist = append(gCIDRsWhitelist, cidrWList...)
-	gHostWhitelist = append(gHostWhitelist, hostWList...)
+	gNetFilterPolicy.Store(&netFilterPolicy{
+		disableInternal: disableInternal,
+		cidrsWhitelist:  append([]string(nil), cidrWList...),
+		hostWhitelist:   append([]string(nil), hostWList...),
+	})
+}
+
+func requestURLBlocked(target string) bool {
+	policy := gNetFilterPolicy.Load()
+	if policy == nil {
+		return filterURL(target, false, nil, nil)
+	}
+	return filterURL(target, policy.disableInternal, policy.cidrsWhitelist, policy.hostWhitelist)
 }
 
 func filterHost(host string, disableInternal bool, cidrsWhite []string, hostWhite []string) bool {
@@ -154,7 +171,7 @@ func HTTPRequest(ctx *runtime.Task, funcExpr *ast.CallExpr) *errchain.PlError {
 		prefix = prefixVal.(string)
 	}
 
-	if filterURL(url.(string), gDisableInternalNet, gCIDRsWhitelist, gHostWhitelist) {
+	if requestURLBlocked(url.(string)) {
 		ctx.Regs.ReturnAppend(nil, ast.Nil)
 		return nil
 	}
