@@ -38,9 +38,27 @@ type netFilterPolicy struct {
 
 var gNetFilterPolicy atomic.Pointer[netFilterPolicy]
 
-// SetNetFilter replaces the entire policy and copies the provided allowlists.
-// Concurrent requests observe either the previous or the new complete policy.
+// SetNetFilter appends allowlists and updates the internal-network flag, preserving
+// the historical API. Concurrent updates do not lose previously added entries.
 func SetNetFilter(disableInternal bool, cidrWList, hostWList []string) {
+	for {
+		old := gNetFilterPolicy.Load()
+		next := &netFilterPolicy{disableInternal: disableInternal}
+		if old != nil {
+			next.cidrsWhitelist = append(next.cidrsWhitelist, old.cidrsWhitelist...)
+			next.hostWhitelist = append(next.hostWhitelist, old.hostWhitelist...)
+		}
+		next.cidrsWhitelist = append(next.cidrsWhitelist, cidrWList...)
+		next.hostWhitelist = append(next.hostWhitelist, hostWList...)
+		if gNetFilterPolicy.CompareAndSwap(old, next) {
+			return
+		}
+	}
+}
+
+// ReplaceNetFilter replaces the complete policy for configuration reloads.
+// Input slices are copied and requests observe one immutable policy snapshot.
+func ReplaceNetFilter(disableInternal bool, cidrWList, hostWList []string) {
 	gNetFilterPolicy.Store(&netFilterPolicy{
 		disableInternal: disableInternal,
 		cidrsWhitelist:  append([]string(nil), cidrWList...),
