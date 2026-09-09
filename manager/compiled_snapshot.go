@@ -7,6 +7,7 @@ package manager
 
 import (
 	"fmt"
+
 	"github.com/GuanceCloud/pipeline-go/lang/platypus"
 )
 

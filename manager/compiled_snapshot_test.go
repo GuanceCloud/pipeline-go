@@ -6,11 +6,12 @@
 package manager
 
 import (
+	"testing"
+
 	"github.com/GuanceCloud/cliutils/point"
 	"github.com/GuanceCloud/pipeline-go/constants"
 	"github.com/GuanceCloud/pipeline-go/lang"
 	"github.com/GuanceCloud/pipeline-go/lang/platypus"
-	"testing"
 )
 
 func TestCompiledSnapshotPreservesInstancesAndPriority(t *testing.T) {
